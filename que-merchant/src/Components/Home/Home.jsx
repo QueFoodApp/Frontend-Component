@@ -149,6 +149,15 @@ function Home() {
 
     return (
         <div className="main-container">
+
+            <div className="background-text">
+                    <h1>WELCOME</h1>
+                    <h2>TO</h2>
+                    <h1>QUE</h1>
+                    <h2>FOODHALL</h2>
+            </div>
+
+
             <div className="menu-container">
                 {/* Display menus only if the "Order" item is clicked */}
                 {isOrderClicked && (
@@ -158,18 +167,7 @@ function Home() {
                             filteredMenus.map((menu, index) => (
                                 <div key={index} className="menu-category">
                                     <div className="menu-category-title">{menu.category}</div>
-                                    <ul className="menu-item-list">
-                                    {menu.items ? menu.items.map((item, idx) => (
-                                        <li key={idx} className="menu-item">
-                                            <span className="menu-item-name">{item.name}</span>
-                                            <span className="menu-item-price">${item.price}</span>
-                                            <input type="checkbox" className="menu-toggle" />
-                                        </li>
-                                        )) : (
-                                            <p className="menu-item-empty">No items available</p> /* Apply updated style */
-                                    )}
-
-                                    </ul>
+                                    <button className="edit-menu">&gt;</button>
                                 </div>
                             ))
                         ) : (
