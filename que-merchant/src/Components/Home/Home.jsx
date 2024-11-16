@@ -185,7 +185,7 @@ function Home() {
                     {SideBar.map((value, key) => (
                         <li className={`row ${value.title === "Mode" && isBusyMode ? 'red' : ''}`} key={key}
                             onClick={() => {
-                                if (value.title === "Order") {
+                                if (value.title === "Dish") {
                                     setIsOrderClicked(true); // Trigger menu display when "Order" is clicked
                                 } 
                                 else if (value.title === "Mode") {
