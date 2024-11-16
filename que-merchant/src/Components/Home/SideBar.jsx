@@ -4,6 +4,7 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import HistoryIcon from '@mui/icons-material/History';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import DoNotDisturbOnTotalSilenceIcon from '@mui/icons-material/DoNotDisturbOnTotalSilence';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 export const SideBar = [
     {
@@ -26,4 +27,9 @@ export const SideBar = [
         icon: <DoNotDisturbOnTotalSilenceIcon/>,
         link: "/busy",
     },
+    {
+        title: "Logout",
+        icon: <LogoutIcon/>,
+        link: "/logout",
+    }
 ];

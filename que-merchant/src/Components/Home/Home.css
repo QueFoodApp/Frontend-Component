@@ -1,4 +1,6 @@
+/* Sidebar Styles */
 .sidebar {
+    display: flex;
     height: 100vh;
     width: 180px;
     margin: 0;
@@ -8,6 +10,7 @@
 .sidebar-list {
     height: auto;
     width: 100%;
+    margin: 0px;
     padding: 0;
     background-color: #3b3b3b;
 }
@@ -41,6 +44,71 @@
     flex: 70%;
 }
 
+.main-container {
+    position: relative; /* Ensures children like .menu-container are positioned correctly */
+    display: flex; /* Aligns .sidebar and .menu-container side-by-side */
+    width: 100%; /* Prevents it from exceeding the viewport width */
+    height: 100vh; /* Full height of the viewport */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    box-sizing: border-box; /* Ensures padding is included in width */
+}
+
+
+.menu-container {
+    position: absolute; /* Keeps it aligned relative to .main-container */
+    top: 0;
+    left: 180px; /* Matches the sidebar width */
+    width: 500px; /* Fixed width */
+    max-width: 500px; /* Prevents exceeding the viewport width */
+    height: 100vh; /* Full height */
+    padding: 20px;
+    background-color: #f9f9f9;
+    overflow-y: auto; /* Enable vertical scrolling */
+    overflow-x: hidden; /* Prevent horizontal scrolling inside the menu */
+    box-sizing: border-box; /* Padding is included in the width */
+}
+
+/* Styles for the search bar */
+.search-bar {
+    width: 96%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.search-bar::placeholder {
+    color: #aaa;
+}
+
+/* Menu Category Styling */
+.menu-category {
+    background-color: #fff;
+    padding: 15px; /* Keeps some padding inside each category box */
+    margin-bottom: 10px; /* Reduced margin between categories */
+    border-radius: 8px;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow for separation */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Aligns all content to the left */
+    text-align: left; /* Ensures text inside the category is aligned left */
+}
+
+.menu-category-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+/* Menu Item List */
+.menu-item-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
 /* Timer Display Styles */
 .timer-display {
     position: absolute;
@@ -58,7 +126,8 @@
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3); /* Add shadow for better visibility */
 }
 
-.popup {
+/* Popup and Timer Popup Styles */
+.popup, .timer-popup {
     position: fixed;
     top: 0;
     left: 0;
@@ -70,7 +139,7 @@
     align-items: center;
 }
 
-.popup-content {
+.popup-content, .timer-popup-content {
     background-color: #fff;
     padding: 20px;
     border-radius: 8px;
@@ -78,7 +147,7 @@
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
-.popup-content button {
+.popup-content button, .timer-popup-content button {
     margin: 5px;
     padding: 8px 12px;
 }
@@ -87,27 +156,7 @@
     color: red;
 }
 
-/* Timer Popup Specific Styles */
-.timer-popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.timer-popup-content {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-}
-
+/* Timer Input Group Styles */
 .timer-input-group {
     display: flex;
     align-items: center;
@@ -145,15 +194,10 @@
     background-color: rgba(0, 0, 0, 0.1);
 }
 
-.timer-popup-content button {
-    margin: 5px;
-    padding: 8px 12px;
-}
-
-/* Timer Row Specific Styles */
+/* Timer Row Styles */
 .timer-row {
     width: 100%;
-    height: 70px; /* Adjust height to your liking */
+    height: 70px;
     list-style-type: none;
     margin: 0;
     display: flex;
@@ -162,20 +206,20 @@
     justify-content: center;
     align-items: center;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #3b3b3b; /* Same background as other items */
-    border-top: 1px solid #222; /* Optional: add separator line */
+    background-color: #3b3b3b;
+    border-top: 1px solid #222;
 }
 
 .timer-row:hover {
-    cursor: default; /* No pointer cursor, as it’s not clickable */
+    cursor: default;
 }
 
 /* Styling the Timer Display within the Mode Section */
 .mode-timer {
     width: 100%; 
-    text-align: center; /* Center align the text */
+    text-align: center;
     font-size: 18px;
-    color: red; /* Red color to match active Busy Mode */
+    color: red;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin-top: 5px; /* Add some spacing from the title */
+    margin-top: 5px;
 }

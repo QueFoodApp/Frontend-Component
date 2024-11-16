@@ -11,11 +11,13 @@ function Home() {
     const [isTimerPopupVisible, setIsTimerPopupVisible] = useState(false);
     const [isBusyMode, setIsBusyMode] = useState(false);
     const [currentOptions, setCurrentOptions] = useState(["Busy Mode", "Auto Reject Timer"]);
-    const [hours, setHours] = useState('');
-    const [minutes, setMinutes] = useState('');
-    const [amPm, setAmPm] = useState('AM');
-    const [autoRejectTime, setAutoRejectTime] = useState(null);
-    const [menus, setMenus] = useState([]); // State for menus
+    const [isOrderClicked, setIsOrderClicked] = useState(false);        // State for "Order" click
+    const [menus, setMenus] = useState([]);                             // State for menus
+    const [searchQuery, setSearchQuery] = useState("");                 // New state for search input
+    const [hours, setHours] = useState('');                             // New state for hours input
+    const [minutes, setMinutes] = useState('');                         // New state for minutes input
+    const [amPm, setAmPm] = useState('AM');                             // New state for AM/PM selection
+    const [autoRejectTime, setAutoRejectTime] = useState(null);         // New state for auto reject time
     const timerRef = useRef(null);
 
     // Cleanup timeout on unmount
@@ -43,7 +45,6 @@ function Home() {
                     }
 
                     const data = await response.json(); // Parse JSON data
-                    console.log("Fetched menus:", data); 
                     setMenus(data); // Set the menus in state
                 } catch (error) {
                     console.error("Error fetching menus:", error);
@@ -56,14 +57,18 @@ function Home() {
 
         fetchMenus(); // Call fetch function
     }, [navigate]);
-    // Show the list of Menus in the restaurant owned by the username
-    // useEffect(() => {
-    //     console.log("Menus state updated:", menus);
-    // }, [menus]); // This effect will run whenever `menus` changes
 
     const handleModeClick = () => {
-        setIsPopupVisible(true);
+        setIsPopupVisible(true); // Show popup for mode options
     };
+
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+    };
+
+    const filteredMenus = menus.filter((menu) =>
+        menu.category.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     const handleOptionSelect = (option) => {
         if (option === "Busy Mode") {
@@ -143,40 +148,59 @@ function Home() {
     };
 
     return (
-        <div className="sidebar">
-            <div>
-                <h1>Welcome to Home!</h1>
-                <button onClick={handleLogout}>Logout</button> {/* Call onLogout when clicked */}
+        <div className="main-container">
+            <div className="menu-container">
+                {/* Display menus only if the "Order" item is clicked */}
+                {isOrderClicked && (
+                <div>
+                    <input type="text" className="search-bar" placeholder="Search for a category..." value={searchQuery} onChange={handleSearchChange} />
+                        {filteredMenus.length > 0 ? (
+                            filteredMenus.map((menu, index) => (
+                                <div key={index} className="menu-category">
+                                    <div className="menu-category-title">{menu.category}</div>
+                                    <ul className="menu-item-list">
+                                    {menu.items ? menu.items.map((item, idx) => (
+                                        <li key={idx} className="menu-item">
+                                            <span className="menu-item-name">{item.name}</span>
+                                            <span className="menu-item-price">${item.price}</span>
+                                            <input type="checkbox" className="menu-toggle" />
+                                        </li>
+                                        )) : (
+                                            <p className="menu-item-empty">No items available</p> /* Apply updated style */
+                                    )}
+
+                                    </ul>
+                                </div>
+                            ))
+                        ) : (
+                            <p>No menus available.</p>
+                        )}
+                </div>
+                )}
+                {isOrderClicked && menus.length === 0 && <p>No menus available.</p>}
             </div>
-
-            {/* Display the fetched menus */}
-            <h2>Your Menus:</h2>
-            {menus.length > 0 ? (
-                <ul>
-                    {menus.map((menu, index) => (
-                        <li key={index}>{menu.food_name}</li> // Adjust based on your menu data structure
-                    ))}
-                </ul>
-            ) : (
-                <p>No menus available.</p>
-            )}
-
-            <ul className="sidebar-list">
-                {SideBar.map((value, key) => (
-                    <li
-                        className={`row ${value.title === "Mode" && isBusyMode ? 'red' : ''}`}
-                        key={key}
-                        onClick={() => {
-                            if (value.title === "Mode") {
-                                handleModeClick();
-                            } else {
-                                window.location.pathname = value.link;
-                            }
-                        }}
-                    >
+            
+            <div className="sidebar">
+                <ul className="sidebar-list">
+                    {SideBar.map((value, key) => (
+                        <li className={`row ${value.title === "Mode" && isBusyMode ? 'red' : ''}`} key={key}
+                            onClick={() => {
+                                if (value.title === "Order") {
+                                    setIsOrderClicked(true); // Trigger menu display when "Order" is clicked
+                                } 
+                                else if (value.title === "Mode") {
+                                    handleModeClick();
+                                } 
+                                else if (value.title == "Logout"){
+                                    handleLogout();
+                                }
+                                else {
+                                    window.location.pathname = value.link;
+                                }
+                            }}
+                        >
                         <div id="icon"> {value.icon} </div>
                         <div id="title"> {value.title} </div>
-
                         {/* Display Timer within the Mode Section */}
                         {value.title === "Mode" && autoRejectTime && (
                             <div className="mode-timer">
@@ -187,12 +211,12 @@ function Home() {
                                 })}
                             </div>
                         )}
-                    </li>
-                ))}
-            </ul>
+                        </li>
+                    ))}
+                </ul>
 
-            {/* Popup for selecting modes */}
-            {isPopupVisible && (
+                {/* Popup for selecting modes */}
+                {isPopupVisible && (
                 <div className="popup">
                     <div className="popup-content">
                         <h3>Select a Mode</h3>
@@ -208,51 +232,52 @@ function Home() {
                         <button onClick={() => setIsPopupVisible(false)}>Dismiss</button>
                     </div>
                 </div>
-            )}
+                )}
 
-            {/* Popup for timer input */}
-            {isTimerPopupVisible && (
-                <div className="timer-popup">
-                    <div className="timer-popup-content">
-                        <h3>Set Auto Reject Timer</h3>
-                        <div className="timer-input-group">
-                            <input
-                                type="number"
-                                min="1"
-                                max="12"
-                                placeholder="Hour"
-                                value={hours}
-                                onChange={(e) => setHours(e.target.value)} // Handle input change
-                            />
-                            <span>:</span>
-                            <input
-                                type="number"
-                                min="0"
-                                max="59"
-                                placeholder="Minute"
-                                value={minutes}
-                                onChange={(e) => setMinutes(e.target.value)} // Handle input change
-                            />
-                            <div className="am-pm-container">
-                                <button
-                                    className={`am-pm-button ${amPm === 'AM' ? 'selected' : ''}`}
-                                    onClick={() => setAmPm('AM')}
-                                >
-                                    AM
-                                </button>
-                                <button
-                                    className={`am-pm-button ${amPm === 'PM' ? 'selected' : ''}`}
-                                    onClick={() => setAmPm('PM')}
-                                >
-                                    PM
-                                </button>
+                {/* Popup for timer input */}
+                {isTimerPopupVisible && (
+                    <div className="timer-popup">
+                        <div className="timer-popup-content">
+                            <h3>Set Auto Reject Timer</h3>
+                            <div className="timer-input-group">
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max="12"
+                                    placeholder="Hour"
+                                    value={hours}
+                                    onChange={(e) => setHours(e.target.value)} // Handle input change
+                                />
+                                <span>:</span>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="59"
+                                    placeholder="Minute"
+                                    value={minutes}
+                                    onChange={(e) => setMinutes(e.target.value)} // Handle input change
+                                />
+                                <div className="am-pm-container">
+                                    <button
+                                        className={`am-pm-button ${amPm === 'AM' ? 'selected' : ''}`}
+                                        onClick={() => setAmPm('AM')}
+                                    >
+                                        AM
+                                    </button>
+                                    <button
+                                        className={`am-pm-button ${amPm === 'PM' ? 'selected' : ''}`}
+                                        onClick={() => setAmPm('PM')}
+                                    >
+                                        PM
+                                    </button>
+                                </div>
                             </div>
+                            <button className="popup-button" onClick={handleTimerSubmit}>OK</button>
+                            <button className="popup-button" onClick={() => setIsTimerPopupVisible(false)}>Cancel</button>
                         </div>
-                        <button className="popup-button" onClick={handleTimerSubmit}>OK</button>
-                        <button className="popup-button" onClick={() => setIsTimerPopupVisible(false)}>Cancel</button>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }
