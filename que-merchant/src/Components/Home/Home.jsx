@@ -162,6 +162,7 @@ function Home() {
                 {/* Display menus only if the "Order" item is clicked */}
                 {isOrderClicked && (
                 <div>
+                    <h1>Category</h1>
                     <input type="text" className="search-bar" placeholder="Search for a category..." value={searchQuery} onChange={handleSearchChange} />
                         {filteredMenus.length > 0 ? (
                             filteredMenus.map((menu, index) => (

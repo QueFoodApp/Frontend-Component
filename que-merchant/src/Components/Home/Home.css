@@ -2,7 +2,7 @@
     position: absolute; /* Ensure it stays in the background */
     top: 0;
     left: 0;
-    right: -730px;
+    right: -680px;
     height: 100vh; /* Full height of the viewport */
     display: flex;
     flex-direction: column;
