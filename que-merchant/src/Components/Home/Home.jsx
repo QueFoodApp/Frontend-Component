@@ -6,21 +6,27 @@ import { useNavigate } from "react-router-dom";
 function Home() {
     const navigate = useNavigate();
 
-    // State Variables
+    // popup window states variable 
     const [isPopupVisible, setIsPopupVisible] = useState(false);
     const [isTimerPopupVisible, setIsTimerPopupVisible] = useState(false);
+
+    // busy mode states variable 
     const [isBusyMode, setIsBusyMode] = useState(false);
     const [currentOptions, setCurrentOptions] = useState(["Busy Mode", "Auto Reject Timer"]);
+
+    // display menu states variable 
     const [isOrderClicked, setIsOrderClicked] = useState(false);        // State for "Order" click
     const [menus, setMenus] = useState([]);                             // State for menus
     const [searchQuery, setSearchQuery] = useState("");                 // New state for search input
+
+    // auto reject timer states variable 
     const [hours, setHours] = useState('');                             // New state for hours input
     const [minutes, setMinutes] = useState('');                         // New state for minutes input
     const [amPm, setAmPm] = useState('AM');                             // New state for AM/PM selection
     const [autoRejectTime, setAutoRejectTime] = useState(null);         // New state for auto reject time
     const timerRef = useRef(null);
 
-    // Cleanup timeout on unmount
+    // Auto Rejection Timer: Cleanup timeout on unmount
     useEffect(() => {
         return () => {
             if (timerRef.current) clearTimeout(timerRef.current);
@@ -58,6 +64,8 @@ function Home() {
         fetchMenus(); // Call fetch function
     }, [navigate]);
 
+
+    // Popup: toogle popup visible or not 
     const handleModeClick = () => {
         setIsPopupVisible(true); // Show popup for mode options
     };
@@ -70,12 +78,16 @@ function Home() {
         menu.category.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    
+    // Busy mode & Auto Rejection Timer: toggle different popup windows 
     const handleOptionSelect = (option) => {
         if (option === "Busy Mode") {
             setBusyModeManually(true);
-        } else if (option === "Turn off Busy Mode") {
+        } 
+        else if (option === "Turn off Busy Mode") {
             setBusyModeManually(false);
-        } else if (option === "Auto Reject Timer") {
+        } 
+        else if (option === "Auto Reject Timer") {
             setIsTimerPopupVisible(true);
             setIsPopupVisible(false);
         }
@@ -86,7 +98,8 @@ function Home() {
         setIsBusyMode(isBusy);
         if (isBusy) {
             setCurrentOptions(["Turn off Busy Mode"]);
-        } else {
+        } 
+        else {
             setCurrentOptions(["Busy Mode", "Auto Reject Timer"]);
             if (timerRef.current) {
                 clearTimeout(timerRef.current);
@@ -95,6 +108,7 @@ function Home() {
         }
     };
 
+    // Auto Rejection Timer: handle invalid user inputs 
     const handleTimerSubmit = () => {
         // Validate user input
         if (!hours || !minutes || isNaN(hours) || isNaN(minutes)) {
@@ -147,20 +161,20 @@ function Home() {
         window.location.reload(); // Optional reload
     };
 
+    // Main: Display HTML page 
     return (
+
         <div className="main-container">
 
             <div className="background-text">
-                    <h1>WELCOME</h1>
-                    <h2>TO</h2>
-                    <h1>QUE</h1>
-                    <h2>FOODHALL</h2>
+                <h1>WELCOME</h1>
+                <h2>TO</h2>
+                <h1>QUE</h1>
+                <h2>FOODHALL</h2>
             </div>
 
-
-            <div className="menu-container">
-                {/* Display menus only if the "Order" item is clicked */}
-                {isOrderClicked && (
+            {/* Display menus only if the "Order" item is clicked */}
+            <div className="menu-container"> {isOrderClicked && (
                 <div>
                     <h1>Category</h1>
                     <input type="text" className="search-bar" placeholder="Search for a category..." value={searchQuery} onChange={handleSearchChange} />
@@ -179,7 +193,9 @@ function Home() {
                 {isOrderClicked && menus.length === 0 && <p>No menus available.</p>}
             </div>
             
+
             <div className="sidebar">
+
                 <ul className="sidebar-list">
                     {SideBar.map((value, key) => (
                         <li className={`row ${value.title === "Mode" && isBusyMode ? 'red' : ''}`} key={key}
