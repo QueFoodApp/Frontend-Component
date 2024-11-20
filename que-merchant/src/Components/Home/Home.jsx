@@ -32,6 +32,7 @@ function Home() {
 
     const [foodItems, setFoodItems] = useState([]);
     const [toggledItems, setToggledItems] = useState({});
+    const [masterToggle, setMasterToggle] = useState({});
     
     const handleToggle = (index) => {
         setToggledItems((prevState) => ({
@@ -39,6 +40,19 @@ function Home() {
             [index]: !prevState[index],
         }));
     };
+
+    // Handle master toggle
+    const handleMasterToggle = () => {
+        const newMasterToggle = !masterToggle;
+        setMasterToggle(newMasterToggle);
+    
+        // Set all items to the new master toggle state
+        const newToggledItems = {};
+            foodItems.forEach((_, index) => {
+                newToggledItems[index] = newMasterToggle;
+            });
+            setToggledItems(newToggledItems);
+        };
     
 
     // Auto Rejection Timer: Cleanup timeout on unmount
@@ -207,8 +221,6 @@ function Home() {
         window.location.reload(); // Optional reload
     };
 
-    
-
     // Main: Display HTML page 
     return (
 
@@ -236,8 +248,6 @@ function Home() {
                         ) : (
                             <p>No menus available.</p>
                         )}
-
-
                 </div>
                 )}
                 {isOrderClicked && menus.length === 0 && <p>No menus available.</p>}
@@ -245,21 +255,31 @@ function Home() {
 
             <div className="food-container"> {isOrderClicked && (
                 <div>
-                    <h2>Food Items in Category: {category}</h2>
+
+                    <div className="inline-container-master">
+                        <h2>All dishes of: {category}</h2>
+                        <p>Disable/Enable</p>
+                        <button className={`toggle-button master-toggle ${masterToggle ? 'toggled' : ''}`} onClick={handleMasterToggle}></button>
+                    </div>
+
                     <div className="food-category">
+
                         {foodItems.length > 0 ? (
                             <ul>
                             {foodItems.map((foodItem, index) => (
                                 <li className="food-items" key={index}>
-                                    {foodItem.food_name}: ${foodItem.food_price}
-                                    <button className={`toggle-button ${toggledItems[index] ? 'toggled' : ''}`} onClick={() => handleToggle(index)}></button>
+                                    <p id="food-name">{foodItem.food_name}</p>
+                                    <div className="inline-container">
+                                        <p id="food-price">${foodItem.food_price}</p>
+                                        <button className={`toggle-button ${toggledItems[index] ? 'toggled' : ''}`} onClick={() => handleToggle(index)}></button>
+                                    </div>
                                 </li>
                                 ))}
                             </ul>
                             ) : (
                                 <p>No food items available for this category.</p >
                             )}
-                        </div>
+                    </div>
                 </div>
                 )}
             </div>

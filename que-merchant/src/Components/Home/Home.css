@@ -92,7 +92,7 @@
     max-width: 500px; /* Prevents exceeding the viewport width */
     height: 100vh; /* Full height */
     padding: 20px;
-    background-color: grey;
+    background-color: #696969;
     overflow-y: auto; /* Enable vertical scrolling */
     overflow-x: hidden; /* Prevent horizontal scrolling inside the menu */
     box-sizing: border-box; /* Padding is included in the width */
@@ -102,21 +102,68 @@
     position: absolute; /* Keeps it aligned relative to .main-container */
     top: 0;
     left: 680px; /* Matches the sidebar width */
-    width: 800px; /* Fixed width */
+    width: 1000px; /* Fixed width */
     max-width: 2000px; /* Prevents exceeding the viewport width */
     height: 100vh; /* Full height */
     padding: 20px;
-    /* background-color: #f9f9f9; */
     overflow-y: auto; /* Enable vertical scrolling */
     overflow-x: hidden; /* Prevent horizontal scrolling inside the menu */
     box-sizing: border-box; /* Padding is included in the width */
 }
 
+.inline-container {
+    display: flex;
+    align-items: center; /* Align items vertically */
+}
+
+.inline-container h2 {
+    margin-right: 400px; /* 100px gap between h2 and p */
+}
+
+.inline-container p {
+    position: absolute;
+    right: 200px;
+    gap:200px;
+    bottom: 20px;
+    margin-right: 0; /* No extra space between p and button */
+}
+
+.inline-container button {
+    position: absolute;
+    right: 80px;
+    bottom: 30px;
+    margin-left: 20px; /* Ensure button sits right next to p */
+}
+
+.inline-container-master {
+    display: flex;
+    align-items: center; /* Align items vertically */
+}
+
+.inline-container-master h2 {
+    margin-right: 400px; /* 100px gap between h2 and p */
+}
+
+.inline-container-master p {
+    position: absolute;
+    right: 200px;
+    gap:200px;
+    margin-right: 0; /* No extra space between p and button */
+}
+
+.inline-container-master button {
+    position: absolute;
+    right: 110px;
+    margin-left: 20px; /* Ensure button sits right next to p */
+}
+
 /* Menu Category Styling */
 .food-items {
     position: relative;
-    left: -40px;
+    width: calc(100% - 10px);
+    max-width: 2000px;
     background-color: #fff;
+    margin-left: -30px;
     padding: 15px; /* Keeps some padding inside each category box */
     margin-bottom: 10px; /* Reduced margin between categories */
     border-radius: 8px;
@@ -127,38 +174,63 @@
     text-align: left; /* Ensures text inside the category is aligned left */
 }
 
+
 .toggle-button {
     position: relative;
-    width: 50px; /* Width of the toggle switch */
-    height: 25px; /* Height of the toggle switch */
+    width: 50px; /* Width of the toggle */
+    height: 25px; /* Height of the toggle */
     background-color: #ccc; /* Default background color */
-    border-radius: 25px; /* Rounded edges for the pill shape */
+    border-radius: 25px; /* Full rounded corners for pill shape */
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease; /* Smooth transition */
+    box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3); /* Slight inner shadow for depth */
 }
 
 .toggle-button::before {
     content: "";
     position: absolute;
-    width: 19px; /* Width of the toggle knob */
-    height: 19px; /* Height of the toggle knob */
-    background-color: white; /* Color of the toggle knob */
-    border-radius: 50%; /* Circular knob */
-    top: 3px; /* Vertical alignment inside the switch */
-    left: 3px; /* Initial position of the knob */
-    transition: transform 0.3s ease; /* Smooth transition for toggle movement */
+    top: 3px; /* Vertical alignment */
+    left: 3px; /* Start position for the knob */
+    width: 19px; /* Width of the knob */
+    height: 19px; /* Height of the knob */
+    background-color: white; /* Knob color */
+    border-radius: 50%; /* Fully rounded for the circle */
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.4); /* Shadow for the knob */
+    transition: transform 0.3s ease; /* Smooth transition for knob movement */
 }
 
-/* When toggled, update the background color and move the knob */
+.toggle-button {
+    position: relative;
+    width: 50px; /* Width of the toggle */
+    height: 25px; /* Height of the toggle */
+    background-color: white; /* Default background color */
+    border-radius: 25px; /* Full rounded corners for the pill shape */
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Smooth transition for color change */
+    border: none; /* Remove any default borders */
+}
+
+.toggle-button::before {
+    content: "";
+    position: absolute;
+    top: 3px; /* Vertical alignment of the knob */
+    left: 3px; /* Initial position of the knob */
+    width: 19px; /* Width of the knob */
+    height: 19px; /* Height of the knob */
+    background-color: white; /* Knob color */
+    border-radius: 50%; /* Fully rounded knob */
+    transition: transform 0.3s ease; /* Smooth transition for movement */
+    border: none; /* Remove borders from the knob */
+}
+
+/* Toggled state */
 .toggle-button.toggled {
-    background-color: black; /* Active background color */
+    background-color: black; /* Background color when toggled */
 }
 
 .toggle-button.toggled::before {
-    transform: translateX(25px); /* Moves the knob to the right */
+    transform: translateX(25px); /* Move the knob to the right */
 }
-
-
 
 /* Styles for the search bar */
 .search-bar {
