@@ -30,16 +30,14 @@ function Home() {
     const [autoRejectTime, setAutoRejectTime] = useState(null);         // New state for auto reject time
     const timerRef = useRef(null);
 
-    const [foodItems, setFoodItems] = useState([
-        { food_name: "Chocolate Fudge Cake", food_price: 26, enabled: false },
-        { food_name: "Mango Cheesecake", food_price: 26, enabled: false },
-        // Add more items as necessary
-    ]);
+    const [foodItems, setFoodItems] = useState([]);
+    const [toggledItems, setToggledItems] = useState({});
     
     const handleToggle = (index) => {
-        const updatedFoodItems = [...foodItems];
-        updatedFoodItems[index].enabled = !updatedFoodItems[index].enabled; // Toggle enabled state
-        setFoodItems(updatedFoodItems); // Update state
+        setToggledItems((prevState) => ({
+            ...prevState,
+            [index]: !prevState[index],
+        }));
     };
     
 
@@ -254,7 +252,8 @@ function Home() {
                             {foodItems.map((foodItem, index) => (
                                 <li className="food-items" key={index}>
                                     {foodItem.food_name}: ${foodItem.food_price}
-                                    </li>
+                                    <button className={`toggle-button ${toggledItems[index] ? 'toggled' : ''}`} onClick={() => handleToggle(index)}></button>
+                                </li>
                                 ))}
                             </ul>
                             ) : (

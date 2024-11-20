@@ -106,7 +106,7 @@
     max-width: 2000px; /* Prevents exceeding the viewport width */
     height: 100vh; /* Full height */
     padding: 20px;
-    background-color: #f9f9f9;
+    /* background-color: #f9f9f9; */
     overflow-y: auto; /* Enable vertical scrolling */
     overflow-x: hidden; /* Prevent horizontal scrolling inside the menu */
     box-sizing: border-box; /* Padding is included in the width */
@@ -126,6 +126,39 @@
     align-items: flex-start; /* Aligns all content to the left */
     text-align: left; /* Ensures text inside the category is aligned left */
 }
+
+.toggle-button {
+    position: relative;
+    width: 50px; /* Width of the toggle switch */
+    height: 25px; /* Height of the toggle switch */
+    background-color: #ccc; /* Default background color */
+    border-radius: 25px; /* Rounded edges for the pill shape */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.toggle-button::before {
+    content: "";
+    position: absolute;
+    width: 19px; /* Width of the toggle knob */
+    height: 19px; /* Height of the toggle knob */
+    background-color: white; /* Color of the toggle knob */
+    border-radius: 50%; /* Circular knob */
+    top: 3px; /* Vertical alignment inside the switch */
+    left: 3px; /* Initial position of the knob */
+    transition: transform 0.3s ease; /* Smooth transition for toggle movement */
+}
+
+/* When toggled, update the background color and move the knob */
+.toggle-button.toggled {
+    background-color: black; /* Active background color */
+}
+
+.toggle-button.toggled::before {
+    transform: translateX(25px); /* Moves the knob to the right */
+}
+
+
 
 /* Styles for the search bar */
 .search-bar {
