@@ -6,24 +6,44 @@ import { useNavigate } from "react-router-dom";
 function Home() {
     const navigate = useNavigate();
 
-    // State Variables
+    // popup window states variable 
     const [isPopupVisible, setIsPopupVisible] = useState(false);
     const [isTimerPopupVisible, setIsTimerPopupVisible] = useState(false);
+
+    // busy mode states variable 
     const [isBusyMode, setIsBusyMode] = useState(false);
     const [currentOptions, setCurrentOptions] = useState(["Busy Mode", "Auto Reject Timer"]);
 
+    // display menu states variable 
     const [isOrderClicked, setIsOrderClicked] = useState(false);        // State for "Order" click
     const [menus, setMenus] = useState([]);                             // State for menus
-    const [category, setCategory] = useState(''); // State to store selected category
-    const [foodItems, setFoodItems] = useState([]); // State to store fetched food items
     const [searchQuery, setSearchQuery] = useState("");                 // New state for search input
+
+    // display food and price states variable 
+    const [category, setCategory] = useState('');                       // State to store selected category
+    //const [foodItems, setFoodItems] = useState([]);                     // State to store fetched food items
+
+    // auto reject timer states variable 
     const [hours, setHours] = useState('');                             // New state for hours input
     const [minutes, setMinutes] = useState('');                         // New state for minutes input
     const [amPm, setAmPm] = useState('AM');                             // New state for AM/PM selection
     const [autoRejectTime, setAutoRejectTime] = useState(null);         // New state for auto reject time
     const timerRef = useRef(null);
 
-    // Cleanup timeout on unmount
+    const [foodItems, setFoodItems] = useState([
+        { food_name: "Chocolate Fudge Cake", food_price: 26, enabled: false },
+        { food_name: "Mango Cheesecake", food_price: 26, enabled: false },
+        // Add more items as necessary
+    ]);
+    
+    const handleToggle = (index) => {
+        const updatedFoodItems = [...foodItems];
+        updatedFoodItems[index].enabled = !updatedFoodItems[index].enabled; // Toggle enabled state
+        setFoodItems(updatedFoodItems); // Update state
+    };
+    
+
+    // Auto Rejection Timer: Cleanup timeout on unmount
     useEffect(() => {
         return () => {
             if (timerRef.current) clearTimeout(timerRef.current);
@@ -48,7 +68,6 @@ function Home() {
                     }
 
                     const data = await response.json(); // Parse JSON data
-                    console.log("Fetched menus:", data); 
                     setMenus(data); // Set the menus in state
                 } catch (error) {
                     console.error("Error fetching menus:", error);
@@ -61,34 +80,73 @@ function Home() {
 
         fetchMenus(); // Call fetch function
     }, [navigate]);
-    // Show the list of Menus in the restaurant owned by the username
-    // useEffect(() => {
-    //     console.log("Menus state updated:", menus);
-    // }, [menus]); // This effect will run whenever `menus` changes
 
-
-
+    // Popup: toogle popup visible or not 
     const handleModeClick = () => {
-        setIsPopupVisible(true);
+        setIsPopupVisible(true); // Show popup for mode options
     };
 
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+    };
+
+    const filteredMenus = menus.filter((menu) =>
+        menu.category.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Display Food Items 
+    const fetchFoodByCategory = async (selectedCategory) => {
+        const token = localStorage.getItem("token"); // Your JWT token
+        const url = `http://127.0.0.1:8000/api/menus/food?category=${encodeURIComponent(selectedCategory)}`; // Construct the URL
+
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch food items');
+            }
+
+            const data = await response.json();
+            console.log('Fetched food items:', data);
+            setFoodItems(data); // Set the fetched food items in state
+        } catch (error) {
+            console.error('Error fetching food items:', error);
+        }
+    };
+
+    const handleCategoryClick = (menu) => {
+        setCategory(menu.category); // Set selected category
+        fetchFoodByCategory(menu.category); // Fetch food items based on category
+    };
+
+    // Busy mode & Auto Rejection Timer: toggle different popup windows 
     const handleOptionSelect = (option) => {
         if (option === "Busy Mode") {
             setBusyModeManually(true);
-        } else if (option === "Turn off Busy Mode") {
+        } 
+        else if (option === "Turn off Busy Mode") {
             setBusyModeManually(false);
-        } else if (option === "Auto Reject Timer") {
+        } 
+        else if (option === "Auto Reject Timer") {
             setIsTimerPopupVisible(true);
             setIsPopupVisible(false);
         }
         setIsPopupVisible(false);
     };
 
+    // Auto reject timer: turn off busy mode manually 
     const setBusyModeManually = (isBusy) => {
         setIsBusyMode(isBusy);
         if (isBusy) {
             setCurrentOptions(["Turn off Busy Mode"]);
-        } else {
+        } 
+        else {
             setCurrentOptions(["Busy Mode", "Auto Reject Timer"]);
             if (timerRef.current) {
                 clearTimeout(timerRef.current);
@@ -97,6 +155,7 @@ function Home() {
         }
     };
 
+    // Auto Rejection Timer: handle invalid user inputs 
     const handleTimerSubmit = () => {
         // Validate user input
         if (!hours || !minutes || isNaN(hours) || isNaN(minutes)) {
@@ -141,6 +200,7 @@ function Home() {
         }, timeUntilAutoReject);
     };
 
+    // Logout function 
     const handleLogout = () => {
         // Clear the login state and token
         sessionStorage.removeItem("isLoggedIn"); // Clear login state
@@ -149,121 +209,86 @@ function Home() {
         window.location.reload(); // Optional reload
     };
 
+    
 
-    const fetchFoodByCategory = async (selectedCategory) => {
-        const token = localStorage.getItem("token"); // Your JWT token
-        const url = `http://127.0.0.1:8000/api/menus/food?category=${encodeURIComponent(selectedCategory)}`; // Construct the URL
-
-        try {
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch food items');
-            }
-
-            const data = await response.json();
-            console.log('Fetched food items:', data);
-            setFoodItems(data); // Set the fetched food items in state
-        } catch (error) {
-            console.error('Error fetching food items:', error);
-        }
-    };
-
-    const handleCategoryClick = (menu) => {
-        setCategory(menu.category); // Set selected category
-        fetchFoodByCategory(menu.category); // Fetch food items based on category
-    };
-
+    // Main: Display HTML page 
     return (
-        <div className="sidebar">
-            <div>
-                <h1>Welcome to Home!</h1>
-                <button onClick={handleLogout}>Logout</button>
+
+        <div className="main-container">
+
+            <div className="background-text">
+                <h1>WELCOME</h1>
+                <h2>TO</h2>
+                <h1>QUE</h1>
+                <h2>FOODHALL</h2>
             </div>
-    
-            <h2>Your Menus:</h2>
-            {menus.length > 0 ? (
-                <ul>
-                    {menus.map((menu, index) => (
-                        <li key={index}>{menu.food_name}</li>
-                    ))}
-                </ul>
-            ) : (
-                <p>No menus available.</p>
-            )}
-    
-            <div className="menu-container">
-                {isOrderClicked && (
-                    <div>
-                        <h1>Category</h1>
-                        <input
-                            type="text"
-                            className="search-bar"
-                            placeholder="Search for a category..."
-                            value={searchQuery}
-                            onChange={handleSearchChange}
-                        />
+
+            {/* Display menus only if the "Order" item is clicked */}
+            <div className="menu-container"> {isOrderClicked && (
+                <div>
+                    <h1>Category</h1>
+                    <input type="text" className="search-bar" placeholder="Search for a category..." value={searchQuery} onChange={handleSearchChange} />
                         {filteredMenus.length > 0 ? (
                             filteredMenus.map((menu, index) => (
                                 <div key={index} className="menu-category">
                                     <div className="menu-category-title">{menu.category}</div>
-                                    <button
-                                        className="edit-menu"
-                                        onClick={() => handleCategoryClick(menu)}
-                                    >
-                                        &gt;
-                                    </button>
+                                    <button className="edit-menu" onClick={() => handleCategoryClick(menu)}>&gt;</button>
                                 </div>
                             ))
                         ) : (
                             <p>No menus available.</p>
                         )}
-    
-                        <h2>Food Items in Category: {category}</h2>
-                        {foodItems.length > 0 ? (
-                            <ul>
-                                {foodItems.map((foodItem, index) => (
-                                    <li key={index}>
-                                        {foodItem.food_name}: ${foodItem.food_price}
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p>No food items available for this category.</p>
-                        )}
-                    </div>
+
+
+                </div>
                 )}
                 {isOrderClicked && menus.length === 0 && <p>No menus available.</p>}
             </div>
-    
-            <ul className="sidebar-list">
-                {SideBar.map((value, key) => (
-                    <li
-                        className={`row ${
-                            value.title === "Mode" && isBusyMode ? 'red' : ''
-                        }`}
-                        key={key}
-                        onClick={() => {
-                            if (value.title === "Dish") {
-                                setIsOrderClicked(true);
-                            } else if (value.title === "Mode") {
-                                handleModeClick();
-                            } else if (value.title === "Logout") {
-                                handleLogout();
-                            } else {
-                                window.location.pathname = value.link;
-                            }
-                        }}
-                    >
-                        <div id="icon">{value.icon}</div>
-                        <div id="title">{value.title}</div>
-    
+
+            <div className="food-container"> {isOrderClicked && (
+                <div>
+                    <h2>Food Items in Category: {category}</h2>
+                    <div className="food-category">
+                        {foodItems.length > 0 ? (
+                            <ul>
+                            {foodItems.map((foodItem, index) => (
+                                <li className="food-items" key={index}>
+                                    {foodItem.food_name}: ${foodItem.food_price}
+                                    </li>
+                                ))}
+                            </ul>
+                            ) : (
+                                <p>No food items available for this category.</p >
+                            )}
+                        </div>
+                </div>
+                )}
+            </div>
+
+
+            <div className="sidebar">
+
+                <ul className="sidebar-list">
+                    {SideBar.map((value, key) => (
+                        <li className={`row ${value.title === "Mode" && isBusyMode ? 'red' : ''}`} key={key}
+                            onClick={() => {
+                                if (value.title === "Dish") {
+                                    setIsOrderClicked(true); // Trigger menu display when "Order" is clicked
+                                } 
+                                else if (value.title === "Mode") {
+                                    handleModeClick();
+                                } 
+                                else if (value.title == "Logout"){
+                                    handleLogout();
+                                }
+                                else {
+                                    window.location.pathname = value.link;
+                                }
+                            }}
+                        >
+                        <div id="icon"> {value.icon} </div>
+                        <div id="title"> {value.title} </div>
+                        {/* Display Timer within the Mode Section */}
                         {value.title === "Mode" && autoRejectTime && (
                             <div className="mode-timer">
                                 {autoRejectTime.toLocaleTimeString([], {
@@ -273,55 +298,51 @@ function Home() {
                                 })}
                             </div>
                         )}
-                    </li>
-                ))}
-            </ul>
-    
-            {isPopupVisible && (
+                        </li>
+                    ))}
+                </ul>
+
+                {/* Popup for selecting modes */}
+                {isPopupVisible && (
                 <div className="popup">
                     <div className="popup-content">
                         <h3>Select a Mode</h3>
                         {currentOptions.includes("Busy Mode") && (
-                            <button onClick={() => handleOptionSelect("Busy Mode")}>
-                                Busy Mode
-                            </button>
+                            <button onClick={() => handleOptionSelect("Busy Mode")}>Busy Mode</button>
                         )}
                         {currentOptions.includes("Auto Reject Timer") && (
-                            <button onClick={() => handleOptionSelect("Auto Reject Timer")}>
-                                Auto Reject Timer
-                            </button>
+                            <button onClick={() => handleOptionSelect("Auto Reject Timer")}>Auto Reject Timer</button>
                         )}
                         {currentOptions.includes("Turn off Busy Mode") && (
-                            <button onClick={() => handleOptionSelect("Turn off Busy Mode")}>
-                                Turn off Busy Mode
-                            </button>
+                            <button onClick={() => handleOptionSelect("Turn off Busy Mode")}>Turn off Busy Mode</button>
                         )}
                         <button onClick={() => setIsPopupVisible(false)}>Dismiss</button>
                     </div>
                 </div>
-            )}
-    
-            {isTimerPopupVisible && (
-                <div className="timer-popup">
-                    <div className="timer-popup-content">
-                        <h3>Set Auto Reject Timer</h3>
-                        <div className="timer-input-group">
-                            <input
-                                type="number"
-                                min="1"
-                                max="12"
-                                placeholder="Hour"
-                                value={hours}
-                                onChange={(e) => setHours(e.target.value)}
-                            />
-                            <span>:</span>
-                            <input
-                                type="number"
-                                min="0"
-                                max="59"
-                                placeholder="Minute"
-                                value={minutes}
-                                onChange={(e) => setMinutes(e.target.value)}
+                )}
+
+                {/* Popup for timer input */}
+                {isTimerPopupVisible && (
+                    <div className="timer-popup">
+                        <div className="timer-popup-content">
+                            <h3>Set Auto Reject Timer</h3>
+                            <div className="timer-input-group">
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max="12"
+                                    placeholder="Hour"
+                                    value={hours}
+                                    onChange={(e) => setHours(e.target.value)} // Handle input change
+                                />
+                                <span>:</span>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="59"
+                                    placeholder="Minute"
+                                    value={minutes}
+                                    onChange={(e) => setMinutes(e.target.value)} // Handle input change
                                 />
                                 <div className="am-pm-container">
                                     <button
@@ -338,21 +359,14 @@ function Home() {
                                     </button>
                                 </div>
                             </div>
-                            <button className="popup-button" onClick={handleTimerSubmit}>
-                                OK
-                            </button>
-                            <button
-                                className="popup-button"
-                                onClick={() => setIsTimerPopupVisible(false)}
-                            >
-                                Cancel
-                            </button>
+                            <button className="popup-button" onClick={handleTimerSubmit}>OK</button>
+                            <button className="popup-button" onClick={() => setIsTimerPopupVisible(false)}>Cancel</button>
                         </div>
                     </div>
                 )}
             </div>
-        );
-    }
-
+        </div>
+    );
+}
 
 export default Home;
