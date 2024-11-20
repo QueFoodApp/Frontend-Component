@@ -11,11 +11,16 @@ function Home() {
     const [isTimerPopupVisible, setIsTimerPopupVisible] = useState(false);
     const [isBusyMode, setIsBusyMode] = useState(false);
     const [currentOptions, setCurrentOptions] = useState(["Busy Mode", "Auto Reject Timer"]);
-    const [hours, setHours] = useState('');
-    const [minutes, setMinutes] = useState('');
-    const [amPm, setAmPm] = useState('AM');
-    const [autoRejectTime, setAutoRejectTime] = useState(null);
-    const [menus, setMenus] = useState([]); // State for menus
+
+    const [isOrderClicked, setIsOrderClicked] = useState(false);        // State for "Order" click
+    const [menus, setMenus] = useState([]);                             // State for menus
+    const [category, setCategory] = useState(''); // State to store selected category
+    const [foodItems, setFoodItems] = useState([]); // State to store fetched food items
+    const [searchQuery, setSearchQuery] = useState("");                 // New state for search input
+    const [hours, setHours] = useState('');                             // New state for hours input
+    const [minutes, setMinutes] = useState('');                         // New state for minutes input
+    const [amPm, setAmPm] = useState('AM');                             // New state for AM/PM selection
+    const [autoRejectTime, setAutoRejectTime] = useState(null);         // New state for auto reject time
     const timerRef = useRef(null);
 
     // Cleanup timeout on unmount
@@ -60,6 +65,8 @@ function Home() {
     // useEffect(() => {
     //     console.log("Menus state updated:", menus);
     // }, [menus]); // This effect will run whenever `menus` changes
+
+
 
     const handleModeClick = () => {
         setIsPopupVisible(true);
@@ -142,42 +149,121 @@ function Home() {
         window.location.reload(); // Optional reload
     };
 
+
+    const fetchFoodByCategory = async (selectedCategory) => {
+        const token = localStorage.getItem("token"); // Your JWT token
+        const url = `http://127.0.0.1:8000/api/menus/food?category=${encodeURIComponent(selectedCategory)}`; // Construct the URL
+
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch food items');
+            }
+
+            const data = await response.json();
+            console.log('Fetched food items:', data);
+            setFoodItems(data); // Set the fetched food items in state
+        } catch (error) {
+            console.error('Error fetching food items:', error);
+        }
+    };
+
+    const handleCategoryClick = (menu) => {
+        setCategory(menu.category); // Set selected category
+        fetchFoodByCategory(menu.category); // Fetch food items based on category
+    };
+
     return (
         <div className="sidebar">
             <div>
                 <h1>Welcome to Home!</h1>
-                <button onClick={handleLogout}>Logout</button> {/* Call onLogout when clicked */}
+                <button onClick={handleLogout}>Logout</button>
             </div>
-
-            {/* Display the fetched menus */}
+    
             <h2>Your Menus:</h2>
             {menus.length > 0 ? (
                 <ul>
                     {menus.map((menu, index) => (
-                        <li key={index}>{menu.food_name}</li> // Adjust based on your menu data structure
+                        <li key={index}>{menu.food_name}</li>
                     ))}
                 </ul>
             ) : (
                 <p>No menus available.</p>
             )}
-
+    
+            <div className="menu-container">
+                {isOrderClicked && (
+                    <div>
+                        <h1>Category</h1>
+                        <input
+                            type="text"
+                            className="search-bar"
+                            placeholder="Search for a category..."
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                        />
+                        {filteredMenus.length > 0 ? (
+                            filteredMenus.map((menu, index) => (
+                                <div key={index} className="menu-category">
+                                    <div className="menu-category-title">{menu.category}</div>
+                                    <button
+                                        className="edit-menu"
+                                        onClick={() => handleCategoryClick(menu)}
+                                    >
+                                        &gt;
+                                    </button>
+                                </div>
+                            ))
+                        ) : (
+                            <p>No menus available.</p>
+                        )}
+    
+                        <h2>Food Items in Category: {category}</h2>
+                        {foodItems.length > 0 ? (
+                            <ul>
+                                {foodItems.map((foodItem, index) => (
+                                    <li key={index}>
+                                        {foodItem.food_name}: ${foodItem.food_price}
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p>No food items available for this category.</p>
+                        )}
+                    </div>
+                )}
+                {isOrderClicked && menus.length === 0 && <p>No menus available.</p>}
+            </div>
+    
             <ul className="sidebar-list">
                 {SideBar.map((value, key) => (
                     <li
-                        className={`row ${value.title === "Mode" && isBusyMode ? 'red' : ''}`}
+                        className={`row ${
+                            value.title === "Mode" && isBusyMode ? 'red' : ''
+                        }`}
                         key={key}
                         onClick={() => {
-                            if (value.title === "Mode") {
+                            if (value.title === "Dish") {
+                                setIsOrderClicked(true);
+                            } else if (value.title === "Mode") {
                                 handleModeClick();
+                            } else if (value.title === "Logout") {
+                                handleLogout();
                             } else {
                                 window.location.pathname = value.link;
                             }
                         }}
                     >
-                        <div id="icon"> {value.icon} </div>
-                        <div id="title"> {value.title} </div>
-
-                        {/* Display Timer within the Mode Section */}
+                        <div id="icon">{value.icon}</div>
+                        <div id="title">{value.title}</div>
+    
                         {value.title === "Mode" && autoRejectTime && (
                             <div className="mode-timer">
                                 {autoRejectTime.toLocaleTimeString([], {
@@ -190,27 +276,31 @@ function Home() {
                     </li>
                 ))}
             </ul>
-
-            {/* Popup for selecting modes */}
+    
             {isPopupVisible && (
                 <div className="popup">
                     <div className="popup-content">
                         <h3>Select a Mode</h3>
                         {currentOptions.includes("Busy Mode") && (
-                            <button onClick={() => handleOptionSelect("Busy Mode")}>Busy Mode</button>
+                            <button onClick={() => handleOptionSelect("Busy Mode")}>
+                                Busy Mode
+                            </button>
                         )}
                         {currentOptions.includes("Auto Reject Timer") && (
-                            <button onClick={() => handleOptionSelect("Auto Reject Timer")}>Auto Reject Timer</button>
+                            <button onClick={() => handleOptionSelect("Auto Reject Timer")}>
+                                Auto Reject Timer
+                            </button>
                         )}
                         {currentOptions.includes("Turn off Busy Mode") && (
-                            <button onClick={() => handleOptionSelect("Turn off Busy Mode")}>Turn off Busy Mode</button>
+                            <button onClick={() => handleOptionSelect("Turn off Busy Mode")}>
+                                Turn off Busy Mode
+                            </button>
                         )}
                         <button onClick={() => setIsPopupVisible(false)}>Dismiss</button>
                     </div>
                 </div>
             )}
-
-            {/* Popup for timer input */}
+    
             {isTimerPopupVisible && (
                 <div className="timer-popup">
                     <div className="timer-popup-content">
@@ -222,7 +312,7 @@ function Home() {
                                 max="12"
                                 placeholder="Hour"
                                 value={hours}
-                                onChange={(e) => setHours(e.target.value)} // Handle input change
+                                onChange={(e) => setHours(e.target.value)}
                             />
                             <span>:</span>
                             <input
@@ -231,30 +321,37 @@ function Home() {
                                 max="59"
                                 placeholder="Minute"
                                 value={minutes}
-                                onChange={(e) => setMinutes(e.target.value)} // Handle input change
-                            />
-                            <div className="am-pm-container">
-                                <button
-                                    className={`am-pm-button ${amPm === 'AM' ? 'selected' : ''}`}
-                                    onClick={() => setAmPm('AM')}
-                                >
-                                    AM
-                                </button>
-                                <button
-                                    className={`am-pm-button ${amPm === 'PM' ? 'selected' : ''}`}
-                                    onClick={() => setAmPm('PM')}
-                                >
-                                    PM
-                                </button>
+                                onChange={(e) => setMinutes(e.target.value)}
+                                />
+                                <div className="am-pm-container">
+                                    <button
+                                        className={`am-pm-button ${amPm === 'AM' ? 'selected' : ''}`}
+                                        onClick={() => setAmPm('AM')}
+                                    >
+                                        AM
+                                    </button>
+                                    <button
+                                        className={`am-pm-button ${amPm === 'PM' ? 'selected' : ''}`}
+                                        onClick={() => setAmPm('PM')}
+                                    >
+                                        PM
+                                    </button>
+                                </div>
                             </div>
+                            <button className="popup-button" onClick={handleTimerSubmit}>
+                                OK
+                            </button>
+                            <button
+                                className="popup-button"
+                                onClick={() => setIsTimerPopupVisible(false)}
+                            >
+                                Cancel
+                            </button>
                         </div>
-                        <button className="popup-button" onClick={handleTimerSubmit}>OK</button>
-                        <button className="popup-button" onClick={() => setIsTimerPopupVisible(false)}>Cancel</button>
                     </div>
-                </div>
-            )}
-        </div>
-    );
-}
+                )}
+            </div>
+        );
+    }
 
 export default Home;
