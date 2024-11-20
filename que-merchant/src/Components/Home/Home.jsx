@@ -19,12 +19,29 @@ function Home() {
     const [menus, setMenus] = useState([]);                             // State for menus
     const [searchQuery, setSearchQuery] = useState("");                 // New state for search input
 
+    // display food and price states variable 
+    const [category, setCategory] = useState('');                       // State to store selected category
+    //const [foodItems, setFoodItems] = useState([]);                     // State to store fetched food items
+
     // auto reject timer states variable 
     const [hours, setHours] = useState('');                             // New state for hours input
     const [minutes, setMinutes] = useState('');                         // New state for minutes input
     const [amPm, setAmPm] = useState('AM');                             // New state for AM/PM selection
     const [autoRejectTime, setAutoRejectTime] = useState(null);         // New state for auto reject time
     const timerRef = useRef(null);
+
+    const [foodItems, setFoodItems] = useState([
+        { food_name: "Chocolate Fudge Cake", food_price: 26, enabled: false },
+        { food_name: "Mango Cheesecake", food_price: 26, enabled: false },
+        // Add more items as necessary
+    ]);
+    
+    const handleToggle = (index) => {
+        const updatedFoodItems = [...foodItems];
+        updatedFoodItems[index].enabled = !updatedFoodItems[index].enabled; // Toggle enabled state
+        setFoodItems(updatedFoodItems); // Update state
+    };
+    
 
     // Auto Rejection Timer: Cleanup timeout on unmount
     useEffect(() => {
@@ -64,7 +81,6 @@ function Home() {
         fetchMenus(); // Call fetch function
     }, [navigate]);
 
-
     // Popup: toogle popup visible or not 
     const handleModeClick = () => {
         setIsPopupVisible(true); // Show popup for mode options
@@ -78,7 +94,37 @@ function Home() {
         menu.category.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    
+    // Display Food Items 
+    const fetchFoodByCategory = async (selectedCategory) => {
+        const token = localStorage.getItem("token"); // Your JWT token
+        const url = `http://127.0.0.1:8000/api/menus/food?category=${encodeURIComponent(selectedCategory)}`; // Construct the URL
+
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch food items');
+            }
+
+            const data = await response.json();
+            console.log('Fetched food items:', data);
+            setFoodItems(data); // Set the fetched food items in state
+        } catch (error) {
+            console.error('Error fetching food items:', error);
+        }
+    };
+
+    const handleCategoryClick = (menu) => {
+        setCategory(menu.category); // Set selected category
+        fetchFoodByCategory(menu.category); // Fetch food items based on category
+    };
+
     // Busy mode & Auto Rejection Timer: toggle different popup windows 
     const handleOptionSelect = (option) => {
         if (option === "Busy Mode") {
@@ -94,6 +140,7 @@ function Home() {
         setIsPopupVisible(false);
     };
 
+    // Auto reject timer: turn off busy mode manually 
     const setBusyModeManually = (isBusy) => {
         setIsBusyMode(isBusy);
         if (isBusy) {
@@ -153,6 +200,7 @@ function Home() {
         }, timeUntilAutoReject);
     };
 
+    // Logout function 
     const handleLogout = () => {
         // Clear the login state and token
         sessionStorage.removeItem("isLoggedIn"); // Clear login state
@@ -160,6 +208,8 @@ function Home() {
         navigate("/login"); // Redirect to the login page after logging out
         window.location.reload(); // Optional reload
     };
+
+    
 
     // Main: Display HTML page 
     return (
@@ -182,17 +232,39 @@ function Home() {
                             filteredMenus.map((menu, index) => (
                                 <div key={index} className="menu-category">
                                     <div className="menu-category-title">{menu.category}</div>
-                                    <button className="edit-menu">&gt;</button>
+                                    <button className="edit-menu" onClick={() => handleCategoryClick(menu)}>&gt;</button>
                                 </div>
                             ))
                         ) : (
                             <p>No menus available.</p>
                         )}
+
+
                 </div>
                 )}
                 {isOrderClicked && menus.length === 0 && <p>No menus available.</p>}
             </div>
-            
+
+            <div className="food-container"> {isOrderClicked && (
+                <div>
+                    <h2>Food Items in Category: {category}</h2>
+                    <div className="food-category">
+                        {foodItems.length > 0 ? (
+                            <ul>
+                            {foodItems.map((foodItem, index) => (
+                                <li className="food-items" key={index}>
+                                    {foodItem.food_name}: ${foodItem.food_price}
+                                    </li>
+                                ))}
+                            </ul>
+                            ) : (
+                                <p>No food items available for this category.</p >
+                            )}
+                        </div>
+                </div>
+                )}
+            </div>
+
 
             <div className="sidebar">
 

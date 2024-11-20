@@ -84,7 +84,6 @@
     box-sizing: border-box; /* Ensures padding is included in width */
 }
 
-
 .menu-container {
     position: absolute; /* Keeps it aligned relative to .main-container */
     top: 0;
@@ -93,10 +92,39 @@
     max-width: 500px; /* Prevents exceeding the viewport width */
     height: 100vh; /* Full height */
     padding: 20px;
+    background-color: grey;
+    overflow-y: auto; /* Enable vertical scrolling */
+    overflow-x: hidden; /* Prevent horizontal scrolling inside the menu */
+    box-sizing: border-box; /* Padding is included in the width */
+}
+
+.food-container {
+    position: absolute; /* Keeps it aligned relative to .main-container */
+    top: 0;
+    left: 680px; /* Matches the sidebar width */
+    width: 800px; /* Fixed width */
+    max-width: 2000px; /* Prevents exceeding the viewport width */
+    height: 100vh; /* Full height */
+    padding: 20px;
     background-color: #f9f9f9;
     overflow-y: auto; /* Enable vertical scrolling */
     overflow-x: hidden; /* Prevent horizontal scrolling inside the menu */
     box-sizing: border-box; /* Padding is included in the width */
+}
+
+/* Menu Category Styling */
+.food-items {
+    position: relative;
+    left: -40px;
+    background-color: #fff;
+    padding: 15px; /* Keeps some padding inside each category box */
+    margin-bottom: 10px; /* Reduced margin between categories */
+    border-radius: 8px;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow for separation */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Aligns all content to the left */
+    text-align: left; /* Ensures text inside the category is aligned left */
 }
 
 /* Styles for the search bar */
