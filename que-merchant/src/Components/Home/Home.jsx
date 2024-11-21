@@ -30,10 +30,17 @@ function Home() {
     const [autoRejectTime, setAutoRejectTime] = useState(null);         // New state for auto reject time
     const timerRef = useRef(null);
 
+    // food item states variable 
     const [foodItems, setFoodItems] = useState([]);
     const [toggledItems, setToggledItems] = useState({});
     const [masterToggle, setMasterToggle] = useState({});
-    
+
+    // display order states variable
+    const [orders, setFetchedOrders] = useState([]); // Fetched orders
+    const [order, setOrders] = useState(false); // Display control for orders
+    const [visibleOrders, setVisibleOrders] = useState({});
+
+    // handle dish avaiablity toggle
     const handleToggle = (index) => {
         setToggledItems((prevState) => ({
             ...prevState,
@@ -41,7 +48,7 @@ function Home() {
         }));
     };
 
-    // Handle master toggle
+    // Handle master dish avaiability toggle
     const handleMasterToggle = () => {
         const newMasterToggle = !masterToggle;
         setMasterToggle(newMasterToggle);
@@ -54,7 +61,6 @@ function Home() {
             setToggledItems(newToggledItems);
         };
     
-
     // Auto Rejection Timer: Cleanup timeout on unmount
     useEffect(() => {
         return () => {
@@ -92,6 +98,39 @@ function Home() {
 
         fetchMenus(); // Call fetch function
     }, [navigate]);
+
+    // Fetch orders when the compoinent mounts
+    useEffect(() => {
+        const fetchOrders = async () => {
+            const token = localStorage.getItem("token");
+            if (token) {
+                try {
+                    const response = await fetch("http://127.0.0.1:8000/api/order", { 
+                        method: "GET",
+                        headers: {
+                            "Authorization": `Bearer ${token}`,
+                        },
+                    });
+    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`Failed to fetch orders. Status: ${response.status}, Detail: ${errorData.detail}`);
+                    }
+    
+                    const data = await response.json(); 
+                    setFetchedOrders(data); // Set the fetched orders
+                } catch (error) {
+                    console.error("Error fetching orders:", error);
+                    navigate("/login");
+                }
+            } else {
+                navigate("/login");
+            }
+        };
+    
+        fetchOrders();
+    }, []);
+    
 
     // Popup: toogle popup visible or not 
     const handleModeClick = () => {
@@ -221,6 +260,14 @@ function Home() {
         window.location.reload(); // Optional reload
     };
 
+    // toggle order information 
+    const toggleOrderVisibility = (index) => {
+        setVisibleOrders((prevState) => ({
+            ...prevState,
+            [index]: !prevState[index], // Toggle visibility for the specific order
+        }));
+    };
+    
     // Main: Display HTML page 
     return (
 
@@ -234,24 +281,75 @@ function Home() {
             </div>
 
             {/* Display menus only if the "Order" item is clicked */}
-            <div className="menu-container"> {isOrderClicked && (
-                <div>
+            {isOrderClicked && (
+                <div className="menu-container">
                     <h1>Category</h1>
-                    <input type="text" className="search-bar" placeholder="Search for a category..." value={searchQuery} onChange={handleSearchChange} />
-                        {filteredMenus.length > 0 ? (
-                            filteredMenus.map((menu, index) => (
-                                <div key={index} className="menu-category">
-                                    <div className="menu-category-title">{menu.category}</div>
-                                    <button className="edit-menu" onClick={() => handleCategoryClick(menu)}>&gt;</button>
-                                </div>
-                            ))
-                        ) : (
-                            <p>No menus available.</p>
-                        )}
+                    <input
+                        type="text"
+                        className="search-bar"
+                        placeholder="Search for a category..."
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                    />
+                    {filteredMenus.length > 0 ? (
+                        filteredMenus.map((menu, index) => (
+                            <div key={index} className="menu-category">
+                                <div className="menu-category-title">{menu.category}</div>
+                                <button
+                                    className="edit-menu"
+                                    onClick={() => handleCategoryClick(menu)}
+                                >
+                                    &gt;
+                                </button>
+                            </div>
+                        ))
+                    ) : (
+                        <p>No menus available.</p>
+                    )}
                 </div>
-                )}
-                {isOrderClicked && menus.length === 0 && <p>No menus available.</p>}
-            </div>
+            )}
+
+            {order && orders.length > 0 ? (
+                <div className="menu-container">
+                    <h2>Ordered Food Items:</h2>
+                    <ul>
+                        {orders.map((order, index) => (
+                            <li key={index}>
+                                <button onClick={() => toggleOrderVisibility(index)}>Order Number {order.order_number}</button>
+                               
+                               {visibleOrders[index] && (
+                               <>
+                               
+                                <p><strong>Due Date:</strong> {order.due_date}</p>
+                                <p><strong>Order Status:</strong> {order.status}</p>
+                                <p><strong>Item Count:</strong> {order.items_count}</p>
+                                <p><strong>Subtotal:</strong> ${order.subtotal}</p>
+                                <p><strong>Tax:</strong> {order.taxes}</p>
+                                <p><strong>Total:</strong> ${order.total}</p>
+                                
+                                {order.fooditems && order.fooditems.length > 0 ? (
+                                    <div>
+                                        <h4>Food Items:</h4>
+                                        <ul>
+                                            {order.fooditems.map((foodItem, itemIndex) => (
+                                                <li key={`${index}-${itemIndex}`}>
+                                                    {foodItem.food_name} - {foodItem.category}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ) : (
+                                    <p>No food items found for this order.</p>
+                                )}
+                                </>
+                        )}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            ) : (
+                order && <></>
+            )}
 
             <div className="food-container"> {isOrderClicked && (
                 <div>
@@ -284,40 +382,46 @@ function Home() {
                 )}
             </div>
 
-
             <div className="sidebar">
 
                 <ul className="sidebar-list">
                     {SideBar.map((value, key) => (
-                        <li className={`row ${value.title === "Mode" && isBusyMode ? 'red' : ''}`} key={key}
-                            onClick={() => {
-                                if (value.title === "Dish") {
-                                    setIsOrderClicked(true); // Trigger menu display when "Order" is clicked
-                                } 
-                                else if (value.title === "Mode") {
-                                    handleModeClick();
-                                } 
-                                else if (value.title == "Logout"){
-                                    handleLogout();
-                                }
-                                else {
-                                    window.location.pathname = value.link;
-                                }
-                            }}
-                        >
-                        <div id="icon"> {value.icon} </div>
-                        <div id="title"> {value.title} </div>
-                        {/* Display Timer within the Mode Section */}
-                        {value.title === "Mode" && autoRejectTime && (
-                            <div className="mode-timer">
-                                {autoRejectTime.toLocaleTimeString([], {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                    hour12: true,
-                                })}
-                            </div>
-                        )}
-                        </li>
+                   <li
+                   className={`row ${value.title === "Mode" && isBusyMode ? 'red' : ''}`}
+                   key={key}
+                   onClick={() => {
+                       if (value.title === "Dish") {
+                           setOrders(false); // Ensure the "Order" view is hidden
+                           setIsOrderClicked(true); // Show the "Dish" view
+                       } 
+                       else if (value.title === "Order") {
+                           setOrders(true); // Show the "Order" view
+                           setIsOrderClicked(false); // Ensure the "Dish" view is hidden
+                       }
+                       else if (value.title === "Mode") {
+                           handleModeClick();
+                       } 
+                       else if (value.title === "Logout") {
+                           handleLogout();
+                       } 
+                       else {
+                           window.location.pathname = value.link;
+                       }
+                   }}
+               >
+                   <div id="icon"> {value.icon} </div>
+                   <div id="title"> {value.title} </div>
+                   {value.title === "Mode" && autoRejectTime && (
+                       <div className="mode-timer">
+                           {autoRejectTime.toLocaleTimeString([], {
+                               hour: '2-digit',
+                               minute: '2-digit',
+                               hour12: true,
+                           })}
+                       </div>
+                   )}
+               </li>
+               
                     ))}
                 </ul>
 

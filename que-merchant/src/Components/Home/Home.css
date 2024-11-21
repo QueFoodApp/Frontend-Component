@@ -98,6 +98,8 @@
     box-sizing: border-box; /* Padding is included in the width */
 }
 
+
+
 .food-container {
     position: absolute; /* Keeps it aligned relative to .main-container */
     top: 0;
