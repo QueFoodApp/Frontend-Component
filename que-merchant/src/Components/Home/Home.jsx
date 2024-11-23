@@ -39,6 +39,8 @@ function Home() {
     const [orders, setFetchedOrders] = useState([]); // Fetched orders
     const [order, setOrders] = useState(false); // Display control for orders
     const [visibleOrders, setVisibleOrders] = useState({});
+    const [selectedOrder, setSelectedOrder] = useState(null); // State for selected order
+
 
     // handle dish avaiablity toggle
     const handleToggle = (index) => {
@@ -259,15 +261,20 @@ function Home() {
         navigate("/login"); // Redirect to the login page after logging out
         window.location.reload(); // Optional reload
     };
+    
+    // const toggleOrderVisibility = (index) => {
+    //     setVisibleOrders((prevState) => ({
+    //         ...prevState,
+    //         [index]: !prevState[index], // Toggle visibility for the clicked order
+    //     }));
+    // };
 
-    // toggle order information 
     const toggleOrderVisibility = (index) => {
-        setVisibleOrders((prevState) => ({
-            ...prevState,
-            [index]: !prevState[index], // Toggle visibility for the specific order
-        }));
+        setVisibleOrders({ [index]: true }); // Only make the clicked order visible
     };
     
+    
+
     // Main: Display HTML page 
     return (
 
@@ -309,47 +316,65 @@ function Home() {
                 </div>
             )}
 
-            {order && orders.length > 0 ? (
-                <div className="menu-container">
-                    <h2>Ordered Food Items:</h2>
-                    <ul>
-                        {orders.map((order, index) => (
-                            <li key={index}>
-                                <button onClick={() => toggleOrderVisibility(index)}>Order Number {order.order_number}</button>
-                               
-                               {visibleOrders[index] && (
-                               <>
-                               
-                                <p><strong>Due Date:</strong> {order.due_date}</p>
-                                <p><strong>Order Status:</strong> {order.status}</p>
-                                <p><strong>Item Count:</strong> {order.items_count}</p>
-                                <p><strong>Subtotal:</strong> ${order.subtotal}</p>
-                                <p><strong>Tax:</strong> {order.taxes}</p>
-                                <p><strong>Total:</strong> ${order.total}</p>
-                                
-                                {order.fooditems && order.fooditems.length > 0 ? (
-                                    <div>
-                                        <h4>Food Items:</h4>
-                                        <ul>
-                                            {order.fooditems.map((foodItem, itemIndex) => (
-                                                <li key={`${index}-${itemIndex}`}>
-                                                    {foodItem.food_name} - {foodItem.category}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                ) : (
-                                    <p>No food items found for this order.</p>
-                                )}
-                                </>
+{/* Display Order List */}
+{order && orders.length > 0 ? (
+    <div className="order-container">
+        <ul>
+            {orders.map((orderItem, index) => (
+                <ul className="order-category" key={index}>
+                    <button
+                        className=""
+                        onClick={() => toggleOrderVisibility(index)}
+                    >
+                        View Details
+                    </button>
+                    <p><strong>Order Number:</strong> {orderItem.order_number}</p>
+                    <p><strong>Order Status:</strong> {orderItem.status}</p>
+                    <p><strong>Item Count:</strong> {orderItem.items_count}</p>
+                    <p><strong>Total:</strong> ${orderItem.total}</p>
+                </ul>
+            ))}
+        </ul>
+    </div>
+) : (
+    order && <></>
+)}
+
+{/* Right Section: Display Selected Order Details */}
+<div className="food-container">
+    {order && orders.length > 0 && (
+        <div>
+            {orders.map((orderItem, index) =>
+                visibleOrders[index] ? (
+                    <div key={index}>
+                        <h2>Order Details</h2>
+                        <p><strong>Order Number:</strong> {orderItem.order_number}</p>
+                        <p><strong>Due Date:</strong> {orderItem.due_date}</p>
+                        <p><strong>Order Status:</strong> {orderItem.status}</p>
+                        <p><strong>Subtotal:</strong> ${orderItem.subtotal}</p>
+                        <p><strong>Tax:</strong> ${orderItem.taxes}</p>
+                        <p><strong>Total:</strong> ${orderItem.total}</p>
+                        {orderItem.fooditems && orderItem.fooditems.length > 0 ? (
+                            <div>
+                                <h4>Food Items:</h4>
+                                <ul>
+                                    {orderItem.fooditems.map((foodItem, itemIndex) => (
+                                        <li key={itemIndex}>
+                                            {foodItem.food_name} - {foodItem.category}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ) : (
+                            <p>No food items found for this order.</p>
                         )}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            ) : (
-                order && <></>
+                    </div>
+                ) : null
             )}
+        </div>
+    )}
+</div>
+
 
             <div className="food-container"> {isOrderClicked && (
                 <div>
@@ -390,9 +415,16 @@ function Home() {
                    className={`row ${value.title === "Mode" && isBusyMode ? 'red' : ''}`}
                    key={key}
                    onClick={() => {
+
+                    console.log("Clicked:", value.title);
+                    console.log("Before: isOrderClicked =", isOrderClicked, "order =", order);
+                    
+
                        if (value.title === "Dish") {
+                        
                            setOrders(false); // Ensure the "Order" view is hidden
                            setIsOrderClicked(true); // Show the "Dish" view
+
                        } 
                        else if (value.title === "Order") {
                            setOrders(true); // Show the "Order" view
@@ -406,7 +438,10 @@ function Home() {
                        } 
                        else {
                            window.location.pathname = value.link;
+                           
                        }
+                       console.log("After: isOrderClicked =", isOrderClicked, "order =", order);
+
                    }}
                >
                    <div id="icon"> {value.icon} </div>
