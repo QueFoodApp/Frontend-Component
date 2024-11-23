@@ -113,6 +113,9 @@
 }
 
 .order-category {
+    position: relative;
+    width: 430px;
+    left:-40px;
     background-color: #fff;
     padding: 15px; /* Keeps some padding inside each category box */
     margin-bottom: 10px; /* Reduced margin between categories */
@@ -134,8 +137,50 @@
     position: relative;
     right: -400px;
     display: inline-block;
-    top: -12px;
+    top: 12px;
 }
+
+/* Order Page: order number title */
+.order-title {
+    font-size: 20px;
+    font-weight: bold;
+    position: relative;
+    top: -30px;
+    color: #333;
+    margin-bottom: 0px;
+}
+
+/* Style the paragraph containing the status */
+.order-status {
+    display: flex;
+    align-items: center; /* Align text and badge vertically */
+    font-size: 16px;
+    color: #333;
+    margin: 5px 0; /* Space around the status */
+}
+
+.order-status strong {
+    margin-right: 10px; /* Add space between "Status:" and the badge */
+    color: #555; /* Muted color for the label */
+}
+
+.status-badge {
+    position: absolute;
+    right:20px;
+    top: 120px;
+    display: inline-block;
+    padding: 5px 15px;
+    background-color: #ff6b6b; /* Red background for the badge */
+    color: #fff; /* White text */
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 15px; /* Fully rounded corners */
+    text-align: center;
+    line-height: 1;
+    text-transform: uppercase; /* Ensures the text is displayed in uppercase */
+}
+
+
 
 .food-container {
     position: absolute; /* Keeps it aligned relative to .main-container */

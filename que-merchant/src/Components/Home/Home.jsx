@@ -261,19 +261,10 @@ function Home() {
         navigate("/login"); // Redirect to the login page after logging out
         window.location.reload(); // Optional reload
     };
-    
-    // const toggleOrderVisibility = (index) => {
-    //     setVisibleOrders((prevState) => ({
-    //         ...prevState,
-    //         [index]: !prevState[index], // Toggle visibility for the clicked order
-    //     }));
-    // };
 
     const toggleOrderVisibility = (index) => {
         setVisibleOrders({ [index]: true }); // Only make the clicked order visible
     };
-    
-    
 
     // Main: Display HTML page 
     return (
@@ -316,64 +307,64 @@ function Home() {
                 </div>
             )}
 
-{/* Display Order List */}
-{order && orders.length > 0 ? (
-    <div className="order-container">
-        <ul>
-            {orders.map((orderItem, index) => (
-                <ul className="order-category" key={index}>
-                    <button
-                        className=""
-                        onClick={() => toggleOrderVisibility(index)}
-                    >
-                        View Details
-                    </button>
-                    <p><strong>Order Number:</strong> {orderItem.order_number}</p>
-                    <p><strong>Order Status:</strong> {orderItem.status}</p>
-                    <p><strong>Item Count:</strong> {orderItem.items_count}</p>
-                    <p><strong>Total:</strong> ${orderItem.total}</p>
-                </ul>
-            ))}
-        </ul>
-    </div>
-) : (
-    order && <></>
-)}
+            {/* Display Order List */}
+            {order && orders.length > 0 ? (
+                <div className="order-container">
+                    <ul>
+                        {orders.map((orderItem, index) => (
+                            <ul className="order-category" key={index}>
+                                <button className="order-edit" onClick={() => toggleOrderVisibility(index)}>&gt;</button>
+                                <p className="order-title">Order Number: {orderItem.order_number}</p>
+                                <p className="order-status">
+                                    <span className="status-badge">Status: {orderItem.status}</span>
+                                </p>
+                                <p>
+                                    <strong>Item Count:</strong> {orderItem.items_count}
+                                    <br/>
+                                    <strong>Total:</strong> ${orderItem.total}
+                                </p>
+                            </ul>
+                        ))}
+                    </ul>
+                </div>
+            ) : (
+                order && <></>
+            )}
 
-{/* Right Section: Display Selected Order Details */}
-<div className="food-container">
-    {order && orders.length > 0 && (
-        <div>
-            {orders.map((orderItem, index) =>
-                visibleOrders[index] ? (
-                    <div key={index}>
-                        <h2>Order Details</h2>
-                        <p><strong>Order Number:</strong> {orderItem.order_number}</p>
-                        <p><strong>Due Date:</strong> {orderItem.due_date}</p>
-                        <p><strong>Order Status:</strong> {orderItem.status}</p>
-                        <p><strong>Subtotal:</strong> ${orderItem.subtotal}</p>
-                        <p><strong>Tax:</strong> ${orderItem.taxes}</p>
-                        <p><strong>Total:</strong> ${orderItem.total}</p>
-                        {orderItem.fooditems && orderItem.fooditems.length > 0 ? (
-                            <div>
-                                <h4>Food Items:</h4>
-                                <ul>
-                                    {orderItem.fooditems.map((foodItem, itemIndex) => (
-                                        <li key={itemIndex}>
-                                            {foodItem.food_name} - {foodItem.category}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ) : (
-                            <p>No food items found for this order.</p>
+            {/* Right Section: Display Selected Order Details */}
+            <div className="food-container">
+                {order && orders.length > 0 && (
+                    <div>
+                        {orders.map((orderItem, index) =>
+                            visibleOrders[index] ? (
+                                <div key={index}>
+                                    <h2>Order Details</h2>
+                                    <p><strong>Order Number:</strong> {orderItem.order_number}</p>
+                                    <p><strong>Due Date:</strong> {orderItem.due_date}</p>
+                                    <p><strong>Order Status:</strong> {orderItem.status}</p>
+                                    <p><strong>Subtotal:</strong> ${orderItem.subtotal}</p>
+                                    <p><strong>Tax:</strong> ${orderItem.taxes}</p>
+                                    <p><strong>Total:</strong> ${orderItem.total}</p>
+                                    {orderItem.fooditems && orderItem.fooditems.length > 0 ? (
+                                        <div>
+                                            <h4>Food Items:</h4>
+                                            <ul>
+                                                {orderItem.fooditems.map((foodItem, itemIndex) => (
+                                                    <li key={itemIndex}>
+                                                        {foodItem.food_name} - {foodItem.category}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    ) : (
+                                        <p>No food items found for this order.</p>
+                                    )}
+                                </div>
+                            ) : null
                         )}
                     </div>
-                ) : null
-            )}
-        </div>
-    )}
-</div>
+                )}
+            </div>
 
 
             <div className="food-container"> {isOrderClicked && (
