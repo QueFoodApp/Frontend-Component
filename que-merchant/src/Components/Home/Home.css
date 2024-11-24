@@ -150,7 +150,17 @@
     margin-bottom: 0px;
 }
 
-/* Style the paragraph containing the status */
+/* Order Page: order number title in the details page */
+.order-title-inside {
+    font-size: 20px;
+    font-weight: bold;
+    position: relative;
+    top: 20px;
+    color: #333;
+    margin-bottom: 0px;
+}
+
+/* Order Page: order status */
 .order-status {
     display: flex;
     align-items: center; /* Align text and badge vertically */
@@ -159,9 +169,15 @@
     margin: 5px 0; /* Space around the status */
 }
 
-.order-status strong {
-    margin-right: 10px; /* Add space between "Status:" and the badge */
-    color: #555; /* Muted color for the label */
+/* Order Page: order status in the details page  */
+.order-status-inside {
+    position: relative;
+    top: -40px;
+    display: flex;
+    align-items: center; /* Align text and badge vertically */
+    font-size: 16px;
+    color: #333;
+    margin: 5px 0; /* Space around the status */
 }
 
 .status-badge {
@@ -180,6 +196,83 @@
     text-transform: uppercase; /* Ensures the text is displayed in uppercase */
 }
 
+.status-badge-inside {
+    position: absolute;
+    right:20px;
+    display: inline-block;
+    padding: 5px 15px;
+    background-color: #ff6b6b; /* Red background for the badge */
+    color: #fff; /* White text */
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 15px; /* Fully rounded corners */
+    text-align: center;
+    line-height: 1;
+    text-transform: uppercase; /* Ensures the text is displayed in uppercase */
+}
+
+.line-break {
+    border: none; 
+    border-top: 1px solid grey;
+}
+
+.subtotal{
+    text-align: right; /* Align text content to the right */
+    margin-right: 20px; /* Optional: Add some spacing from the right edge */
+    position: relative; /* Ensure proper positioning within the parent container */
+}
+
+.order-details {
+    padding: 16px;
+    font-family: Arial, sans-serif;
+}
+
+.food-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.food-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.food-info {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.food-name {
+    font-weight: bold;
+    margin: 0;
+}
+
+.food-price {
+    font-weight: bold;
+    margin-left: 20px;
+}
+
+.update-order-status {
+    position: absolute;
+    bottom: 30px;
+    background-color: #f2f2f2; /* Light grey color */
+    width: 980px; /* Set the width to 100px */
+    height: 65px; /* Set the height to 30px */
+    display: flex; /* Center-align the content */
+    align-items: center; /* Center-align vertically */
+    justify-content: center; /* Center-align horizontally */
+    border-radius: 5px; /* Optional: Add rounded corners for a better look */
+}
+
+select {
+    position: relative;
+    z-index: 10;
+}
 
 
 .food-container {

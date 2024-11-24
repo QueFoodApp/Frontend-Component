@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import "./Home.css";
 import { SideBar } from './SideBar';
 import { useNavigate } from "react-router-dom";
+import { format } from 'date-fns';
 
 function Home() {
     const navigate = useNavigate();
@@ -40,7 +41,18 @@ function Home() {
     const [order, setOrders] = useState(false); // Display control for orders
     const [visibleOrders, setVisibleOrders] = useState({});
     const [selectedOrder, setSelectedOrder] = useState(null); // State for selected order
+    const [status, setStatus] = useState("Pending"); // Initial status
 
+    // handle pickup or rejection 
+    const handleChange = (event) => {
+        const selectedValue = event.target.value;
+
+        if (selectedValue === "Ready to Pick Up") {
+            setStatus("Completed");
+        } else if (selectedValue === "Cancel This Order") {
+            setStatus("Cancelled");
+        }
+    };
 
     // handle dish avaiablity toggle
     const handleToggle = (index) => {
@@ -338,20 +350,26 @@ function Home() {
                         {orders.map((orderItem, index) =>
                             visibleOrders[index] ? (
                                 <div key={index}>
-                                    <h2>Order Details</h2>
-                                    <p><strong>Order Number:</strong> {orderItem.order_number}</p>
-                                    <p><strong>Due Date:</strong> {orderItem.due_date}</p>
-                                    <p><strong>Order Status:</strong> {orderItem.status}</p>
-                                    <p><strong>Subtotal:</strong> ${orderItem.subtotal}</p>
-                                    <p><strong>Tax:</strong> ${orderItem.taxes}</p>
-                                    <p><strong>Total:</strong> ${orderItem.total}</p>
+                                    
+                                    <p className="order-title-inside">Order Number: {orderItem.order_number}</p>
+                                    <br/>
+                                    <h3> Due Date:{' '}{format(new Date(orderItem.due_date), 'hh:mm a')} </h3>
+                                                                    
+                                    <p className="order-status-inside">
+                                        <span className="status-badge-inside">Status: {orderItem.status}</span>
+                                    </p>
+                                    <hr className="line-break"></hr>
+
                                     {orderItem.fooditems && orderItem.fooditems.length > 0 ? (
-                                        <div>
-                                            <h4>Food Items:</h4>
-                                            <ul>
+                                        <div className="order-details">
+                                            <ul className="food-list">
                                                 {orderItem.fooditems.map((foodItem, itemIndex) => (
-                                                    <li key={itemIndex}>
-                                                        {foodItem.food_name} - {foodItem.category}
+                                                    <li key={itemIndex} className="food-item">
+                                                        <div className="food-info">
+                                                            <p className="food-name">{foodItem.food_name}</p>
+                                                            <p className="food-price">${foodItem.food_price}</p>
+                                                        </div>
+                                                        <hr className="line-break" />
                                                     </li>
                                                 ))}
                                             </ul>
@@ -359,6 +377,26 @@ function Home() {
                                     ) : (
                                         <p>No food items found for this order.</p>
                                     )}
+
+                                    <hr className="line-break"></hr>
+
+                                    <div className="subtotal">
+                                        <p> <strong>Subtotal: ${orderItem.subtotal}</strong></p>
+                                        <p> <strong> Tax: ${orderItem.taxes}</strong></p>
+                                        <h3><strong>Total:</strong> ${orderItem.total}</h3>
+                                    </div>
+
+                                    <div>
+                                        {status === "Pending" ? (
+                                            <select onChange={handleChange}>
+                                                <option value="Update the order status">Update the Order Status</option>
+                                                <option value="Ready to Pick Up">Ready to Pick Up</option>
+                                                <option value="Cancel This Order">Cancel This Order</option>
+                                            </select>
+                                        ) : (
+                                            <p>Order Status: {status}</p>
+                                        )}
+                                    </div>
                                 </div>
                             ) : null
                         )}
