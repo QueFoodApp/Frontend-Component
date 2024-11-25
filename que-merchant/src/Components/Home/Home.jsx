@@ -43,7 +43,7 @@ function Home() {
     const [selectedOrder, setSelectedOrder] = useState(null); // State for selected order
     const [status, setStatus] = useState("Pending"); // Initial status
 
-    // handle pickup or rejection 
+    // Order Page: handle pickup or rejection 
     const handleChange = (event) => {
         const selectedValue = event.target.value;
 
@@ -54,7 +54,7 @@ function Home() {
         }
     };
 
-    // handle dish avaiablity toggle
+    // Dish Page: handle dish avaiablity toggle
     const handleToggle = (index) => {
         setToggledItems((prevState) => ({
             ...prevState,
@@ -62,7 +62,7 @@ function Home() {
         }));
     };
 
-    // Handle master dish avaiability toggle
+    // Dish Page: Handle master dish avaiability toggle
     const handleMasterToggle = () => {
         const newMasterToggle = !masterToggle;
         setMasterToggle(newMasterToggle);
@@ -75,14 +75,14 @@ function Home() {
             setToggledItems(newToggledItems);
         };
     
-    // Auto Rejection Timer: Cleanup timeout on unmount
+    // Mode Page: Auto Rejection Timer, Cleanup timeout on unmount
     useEffect(() => {
         return () => {
             if (timerRef.current) clearTimeout(timerRef.current);
         };
     }, []);
 
-    // Fetch menus when the component mounts
+    // Dish Page: API Fetch menus when the component mounts
     useEffect(() => {
         const fetchMenus = async () => {
             const token = localStorage.getItem("token"); // Get the JWT token
@@ -113,7 +113,7 @@ function Home() {
         fetchMenus(); // Call fetch function
     }, [navigate]);
 
-    // Fetch orders when the compoinent mounts
+    // Order Page: API Fetch orders when the compoinent mounts
     useEffect(() => {
         const fetchOrders = async () => {
             const token = localStorage.getItem("token");
@@ -146,20 +146,22 @@ function Home() {
     }, []);
     
 
-    // Popup: toogle popup visible or not 
+    // Mode Page: toogle popup visible or not 
     const handleModeClick = () => {
         setIsPopupVisible(true); // Show popup for mode options
     };
 
+    // Dish Page: search bar 
     const handleSearchChange = (e) => {
         setSearchQuery(e.target.value);
     };
 
+    // Dish Page: search bar function
     const filteredMenus = menus.filter((menu) =>
         menu.category.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Display Food Items 
+    // Dish Page: API Display Food Items 
     const fetchFoodByCategory = async (selectedCategory) => {
         const token = localStorage.getItem("token"); // Your JWT token
         const url = `http://127.0.0.1:8000/api/menus/food?category=${encodeURIComponent(selectedCategory)}`; // Construct the URL
@@ -381,11 +383,25 @@ function Home() {
                                     {orderItem.fooditems && orderItem.fooditems.length > 0 ? (
                                         <div className="order-details">
                                             <ul className="food-list">
-                                                {orderItem.fooditems.map((foodItem, itemIndex) => (
+                                                {Object.entries(
+                                                    orderItem.fooditems.reduce((acc, item) => {
+                                                        if (!acc[item.food_name]) {
+                                                            acc[item.food_name] = { ...item, quantity: 1 };
+                                                        } else {
+                                                            acc[item.food_name].quantity += 1;
+                                                            acc[item.food_name].food_price = (
+                                                                parseFloat(acc[item.food_name].food_price) +
+                                                                parseFloat(item.food_price)
+                                                            ).toFixed(2); // Sum up prices
+                                                        }
+                                                        return acc;
+                                                    }, {})
+                                                ).map(([foodName, groupedItem], itemIndex) => (
                                                     <li key={itemIndex} className="food-item">
                                                         <div className="food-info">
-                                                            <p className="food-name">{foodItem.food_name}</p>
-                                                            <p className="food-price"> ${parseFloat(foodItem.food_price).toFixed(2)}</p>
+                                                            <h3 className="food-name">Quantity: {groupedItem.quantity}</h3>
+                                                            <h3 className="food-name">{foodName}</h3>
+                                                            <h3 className="food-price"> ${parseFloat(groupedItem.food_price).toFixed(2)}</h3>
                                                         </div>
                                                         <hr className="line-break" />
                                                     </li>
@@ -404,7 +420,7 @@ function Home() {
                                         <h3><strong>Total:</strong> ${parseFloat(orderItem.total).toFixed(2)}</h3>
                                     </div>
 
-                                    <div>
+                                    <div className="">
                                         {status === "Pending" ? (
                                             <select onChange={handleChange}>
                                                 <option value="Update the order status">Update the Order Status</option>
@@ -415,6 +431,7 @@ function Home() {
                                             <p>Order Status: {status}</p>
                                         )}
                                     </div>
+
                                 </div>
                             ) : null
                         )}
@@ -431,11 +448,8 @@ function Home() {
                         <button className={`toggle-button master-toggle ${masterToggle ? 'toggled' : ''}`} onClick={handleMasterToggle}></button>
                     </div>
 
-                    <div className="food-category">
-
-                        {foodItems.length > 0 ? (
-                            <ul>
-                            {foodItems.map((foodItem, index) => (
+                    <div className="food-category"> {foodItems.length > 0 ? (
+                            <ul>{foodItems.map((foodItem, index) => (
                                 <li className="food-items" key={index}>
                                     <p id="food-name">{foodItem.food_name}</p>
                                     <div className="inline-container">
@@ -455,54 +469,36 @@ function Home() {
 
             <div className="sidebar">
 
-                <ul className="sidebar-list">
-                    {SideBar.map((value, key) => (
-                   <li
-                   className={`row ${value.title === "Mode" && isBusyMode ? 'red' : ''}`}
-                   key={key}
-                   onClick={() => {
-
-                    console.log("Clicked:", value.title);
-                    console.log("Before: isOrderClicked =", isOrderClicked, "order =", order);
-                    
-
-                       if (value.title === "Dish") {
-                        
-                           setOrders(false); // Ensure the "Order" view is hidden
-                           setIsOrderClicked(true); // Show the "Dish" view
-
-                       } 
-                       else if (value.title === "Order") {
-                           setOrders(true); // Show the "Order" view
-                           setIsOrderClicked(false); // Ensure the "Dish" view is hidden
-                       }
-                       else if (value.title === "Mode") {
-                           handleModeClick();
-                       } 
-                       else if (value.title === "Logout") {
-                           handleLogout();
-                       } 
-                       else {
-                           window.location.pathname = value.link;
-                           
-                       }
-                       console.log("After: isOrderClicked =", isOrderClicked, "order =", order);
-
-                   }}
-               >
-                   <div id="icon"> {value.icon} </div>
-                   <div id="title"> {value.title} </div>
-                   {value.title === "Mode" && autoRejectTime && (
-                       <div className="mode-timer">
-                           {autoRejectTime.toLocaleTimeString([], {
-                               hour: '2-digit',
-                               minute: '2-digit',
-                               hour12: true,
-                           })}
-                       </div>
-                   )}
-               </li>
-               
+                <ul className="sidebar-list">{SideBar.map((value, key) => (
+                   
+                   <li className={`row ${value.title === "Mode" && isBusyMode ? 'red' : ''}`} key={key} onClick={() => {
+                        if (value.title === "Dish") {
+                            setOrders(false); // Ensure the "Order" view is hidden
+                            setIsOrderClicked(true); // Show the "Dish" view
+                        } 
+                        else if (value.title === "Order") {
+                            setOrders(true); // Show the "Order" view
+                            setIsOrderClicked(false); // Ensure the "Dish" view is hidden
+                        }
+                        else if (value.title === "Mode") {
+                            handleModeClick();
+                        } 
+                        else if (value.title === "Logout") {
+                            handleLogout();
+                        } 
+                        else {
+                            window.location.pathname = value.link;
+                        }
+                    }}
+                    >
+                        <div id="icon"> {value.icon} </div>
+                        <div id="title"> {value.title} </div> 
+                        {value.title === "Mode" && autoRejectTime && (
+                            <div className="mode-timer">
+                                {autoRejectTime.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', hour12: true,})}
+                            </div>
+                        )}
+                    </li>
                     ))}
                 </ul>
 

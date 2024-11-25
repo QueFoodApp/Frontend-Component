@@ -218,7 +218,7 @@
 
 .subtotal{
     text-align: right; /* Align text content to the right */
-    margin-right: 20px; /* Optional: Add some spacing from the right edge */
+    margin-right: 14px; /* Optional: Add some spacing from the right edge */
     position: relative; /* Ensure proper positioning within the parent container */
 }
 
