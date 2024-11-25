@@ -278,6 +278,24 @@ function Home() {
         setVisibleOrders({ [index]: true }); // Only make the clicked order visible
     };
 
+    // Order Page: status icon color 
+    const getStatusBadgeStyle = (status) => {
+        switch (status.toLowerCase()) {
+            case 'new':
+                return { backgroundColor: '#ff6b6b' }; // Red
+            case 'cancelled':
+                return { backgroundColor: '#808080' }; // Grey
+            case 'delay':
+                return { backgroundColor: '#ff6b6b' }; // Red
+            case 'complete':
+                return { backgroundColor: '#28a745' }; // Green
+            case 'prepare':
+                return { backgroundColor: '#28a745' }; // Green
+            default:
+                return { backgroundColor: '#000' }; // Default black for unknown status
+        }
+    };
+
     // Main: Display HTML page 
     return (
 
@@ -328,7 +346,7 @@ function Home() {
                                 <button className="order-edit" onClick={() => toggleOrderVisibility(index)}>&gt;</button>
                                 <p className="order-title">Order Number: {orderItem.order_number}</p>
                                 <p className="order-status">
-                                    <span className="status-badge">Status: {orderItem.status}</span>
+                                    <span className="status-badge" style={getStatusBadgeStyle(orderItem.status)}>Status: {orderItem.status}</span>
                                 </p>
                                 <p>
                                     <strong>Item Count:</strong> {orderItem.items_count}
@@ -356,7 +374,7 @@ function Home() {
                                     <h3> Due Date:{' '}{format(new Date(orderItem.due_date), 'hh:mm a')} </h3>
                                                                     
                                     <p className="order-status-inside">
-                                        <span className="status-badge-inside">Status: {orderItem.status}</span>
+                                        <span className="status-badge-inside" style={getStatusBadgeStyle(orderItem.status)} >Status: {orderItem.status}</span>
                                     </p>
                                     <hr className="line-break"></hr>
 
@@ -367,7 +385,7 @@ function Home() {
                                                     <li key={itemIndex} className="food-item">
                                                         <div className="food-info">
                                                             <p className="food-name">{foodItem.food_name}</p>
-                                                            <p className="food-price">${foodItem.food_price}</p>
+                                                            <p className="food-price"> ${parseFloat(foodItem.food_price).toFixed(2)}</p>
                                                         </div>
                                                         <hr className="line-break" />
                                                     </li>
@@ -381,9 +399,9 @@ function Home() {
                                     <hr className="line-break"></hr>
 
                                     <div className="subtotal">
-                                        <p> <strong>Subtotal: ${orderItem.subtotal}</strong></p>
-                                        <p> <strong> Tax: ${orderItem.taxes}</strong></p>
-                                        <h3><strong>Total:</strong> ${orderItem.total}</h3>
+                                        <p><strong>Subtotal: ${parseFloat(orderItem.subtotal).toFixed(2)}</strong></p>
+                                        <p><strong>Tax: ${parseFloat(orderItem.taxes).toFixed(2)}</strong></p>
+                                        <h3><strong>Total:</strong> ${parseFloat(orderItem.total).toFixed(2)}</h3>
                                     </div>
 
                                     <div>
@@ -403,7 +421,6 @@ function Home() {
                     </div>
                 )}
             </div>
-
 
             <div className="food-container"> {isOrderClicked && (
                 <div>

@@ -186,7 +186,7 @@
     top: 120px;
     display: inline-block;
     padding: 5px 15px;
-    background-color: #ff6b6b; /* Red background for the badge */
+   
     color: #fff; /* White text */
     font-size: 18px;
     font-weight: bold;
@@ -273,7 +273,6 @@ select {
     position: relative;
     z-index: 10;
 }
-
 
 .food-container {
     position: absolute; /* Keeps it aligned relative to .main-container */
