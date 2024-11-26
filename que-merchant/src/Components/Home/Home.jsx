@@ -279,7 +279,7 @@ function Home() {
         };
     
         fetchOrders();
-    }, []);
+    }, [status]);
     
 
     // Mode Page: toogle popup visible or not 
