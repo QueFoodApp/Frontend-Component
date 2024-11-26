@@ -269,6 +269,36 @@
     border-radius: 5px; /* Optional: Add rounded corners for a better look */
 }
 
+.custom-dropdown {
+    width: 220px; /* Set a fixed width for better alignment */
+    height: 40px; /* Adjust height for a larger, more clickable dropdown */
+    padding: 5px 10px; /* Add padding for a spacious feel */
+    border: 1px solid #ccc; /* Subtle border */
+    border-radius: 5px; /* Rounded corners */
+    background-color: #f9f9f9; /* Light background for a clean look */
+    font-size: 16px; /* Increase font size for readability */
+    color: #333; /* Dark text for contrast */
+    cursor: pointer; /* Show pointer cursor to indicate interactivity */
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow for depth */
+    appearance: none; /* Remove the default browser styling */
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" height="12" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); /* Custom arrow */
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+}
+
+.custom-dropdown:focus {
+    outline: none; /* Remove default focus outline */
+    border: 1px solid #007BFF; /* Highlight border on focus */
+    box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.5); /* Add a glow effect */
+}
+
+.custom-dropdown option {
+    font-size: 16px; /* Ensure consistent font size for options */
+    color: #333; /* Match text color with dropdown */
+}
+
+
 select {
     position: relative;
     z-index: 10;

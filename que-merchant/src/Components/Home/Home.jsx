@@ -502,9 +502,9 @@ function Home() {
                                         <h3><strong>Total:</strong> ${parseFloat(orderItem.total).toFixed(2)}</h3>
                                     </div>
 
-                                    <div className="">
+                                    <div className="update-order-status">
                                         {status === "Pending" ? (
-                                            <select onChange={handleChange}>
+                                            <select className="custom-dropdown" onChange={handleChange}>
                                                 <option value="Update the order status">Update the Order Status</option>
                                                 <option value="Ready to Pick Up">Ready to Pick Up</option>
                                                 <option value="Cancel This Order">Cancel This Order</option>
