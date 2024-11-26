@@ -43,13 +43,67 @@ function Home() {
     const [status, setStatus] = useState("Pending"); // Initial status
 
     // Order Page: handle pickup or rejection 
-    const handleChange = (event) => {
+    const updateOrderStatus = async (orderNumber, status) => {
+        const token = localStorage.getItem("token"); // Retrieve JWT token
+    
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/order/update-status`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    order_number: orderNumber,
+                    status: status, // The new status to set
+                }),
+            });
+    
+            if (!response.ok) {
+                throw new Error(`Failed to update order status: ${response.statusText}`);
+            }
+    
+            const data = await response.json();
+            console.log('Order status updated successfully:', data);
+            
+            // Return updated status for the order
+            return data.new_status; // Assume the API returns the updated status
+            
+        } catch (error) {
+            console.error("Error updating order status:", error);
+            throw error; // Rethrow error for handling in handleChange
+        }
+    };
+    
+    // Updated handleChange function
+    const handleChange = async (event, orderNumber) => {
         const selectedValue = event.target.value;
+    
+        let newStatus = status; // Default to the current status
+        if (selectedValue == "Ready to Pick Up") {
+            newStatus = "complete"; // Set to Completed
+        } else if (selectedValue == "Cancel This Order") {
+            newStatus = "cancelled"; // Set to Cancelled
+        }
 
-        if (selectedValue === "Ready to Pick Up") {
-            setStatus("Completed");
-        } else if (selectedValue === "Cancel This Order") {
-            setStatus("Cancelled");
+        console.log('Request Body:', {
+            order_number: orderNumber,
+            status: newStatus,
+        });
+    
+        // Call the fetch function to update the status
+        try {
+            const updatedStatus = await updateOrderStatus(orderNumber, newStatus);
+            // Update local status state for the specific order directly
+            setFetchedOrders((prevOrders) => 
+                prevOrders.map(order => 
+                    order.order_number == orderNumber ? { ...order, status: updatedStatus } : order
+                )
+            );
+            
+            setStatus(newStatus); // Update local general status if needed
+        } catch (error) {
+            console.error("Failed to update status in UI:", error);
         }
     };
 
@@ -358,8 +412,34 @@ function Home() {
         window.location.reload(); // Optional reload
     };
 
-    const toggleOrderVisibility = (index) => {
-        setVisibleOrders({ [index]: true }); // Only make the clicked order visible
+    const toggleOrderVisibility = async (event, index, orderNumber, orderStatus) => {
+        // Only make the clicked order visible
+        setVisibleOrders({ [index]: true }); 
+        if(orderStatus == "new" || orderStatus == "prepare")
+        {
+            setStatus("Pending");
+        }
+    
+        let newStatus = status; // Default to the current status
+        
+        if (orderStatus == "new") {
+            newStatus = "prepare"; 
+    
+            try {
+                const updatedStatus = await updateOrderStatus(orderNumber, newStatus);
+                
+                // Update local status state for the specific order directly
+                setFetchedOrders((prevOrders) => 
+                    prevOrders.map(order => 
+                        order.order_number === orderNumber ? { ...order, status: updatedStatus } : order
+                    )
+                );
+                
+                
+            } catch (error) {
+                console.error("Failed to update status in UI:", error);
+            }
+        } 
     };
 
     // Order Page: status icon color 
@@ -427,7 +507,7 @@ function Home() {
                     <ul>
                         {orders.map((orderItem, index) => (
                             <ul className="order-category" key={index}>
-                                <button className="order-edit" onClick={() => toggleOrderVisibility(index)}>&gt;</button>
+                                <button className="order-edit" onClick={(event) => toggleOrderVisibility(event, index, orderItem.order_number, orderItem.status)}>&gt;</button>
                                 <p className="order-title">Order Number: {orderItem.order_number}</p>
                                 <p className="order-status">
                                     <span className="status-badge" style={getStatusBadgeStyle(orderItem.status)}>Status: {orderItem.status}</span>
@@ -504,7 +584,10 @@ function Home() {
 
                                     <div className="update-order-status">
                                         {status === "Pending" ? (
-                                            <select className="custom-dropdown" onChange={handleChange}>
+                                            <select
+                                                className="custom-dropdown"
+                                                onChange={(event) => handleChange(event, orderItem.order_number)} // Pass order number
+                                            >
                                                 <option value="Update the order status">Update the Order Status</option>
                                                 <option value="Ready to Pick Up">Ready to Pick Up</option>
                                                 <option value="Cancel This Order">Cancel This Order</option>
