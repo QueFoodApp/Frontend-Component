@@ -22,7 +22,6 @@ function Home() {
 
     // display food and price states variable 
     const [category, setCategory] = useState('');                       // State to store selected category
-    //const [foodItems, setFoodItems] = useState([]);                     // State to store fetched food items
 
     // auto reject timer states variable 
     const [hours, setHours] = useState('');                             // New state for hours input
@@ -55,25 +54,108 @@ function Home() {
     };
 
     // Dish Page: handle dish avaiablity toggle
-    const handleToggle = (index) => {
-        setToggledItems((prevState) => ({
-            ...prevState,
-            [index]: !prevState[index],
-        }));
+    const handleToggle = async (index) => {
+        // Toggle the item's availability state
+        const newToggleState = !(foodItems[index].availability == "available"); // Get the new toggle state
+    
+        // Update the toggledItems state
+        // setToggledItems((prevState) => ({
+        //     ...prevState,
+        //     [index]: newToggleState,
+        // }));
+    
+        // Get the corresponding food item details
+        const foodItem = foodItems[index]; // Assuming foodItems is an array of objects
+        const foodName = foodItem.food_name; // Food name for validation
+    
+        // Use the category defined in state
+        const selectedCategory = category; // Use the state variable we declared
+    
+        // Determine the availability status based on the toggle state
+        const availability = newToggleState ? 'available' : 'unavailable';
+    
+        // Fetch request to update the availability in the backend
+        await updateFoodAvailability(selectedCategory, foodName, availability);
+
+        fetchFoodByCategory(category);
+    };
+    
+    // Function to fetch and update food availability
+    const updateFoodAvailability = async (category, foodName, availability) => {
+        const token = localStorage.getItem("token"); // Retrieve JWT token
+    
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/menus/availability`, {
+                method: 'PUT', // Or 'PATCH' based on your API design
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    category: category, // Use the state-defined category
+                    food_name: foodName,
+                    availability: availability,
+                }),
+            });
+    
+            if (!response.ok) {
+                throw new Error(`Failed to update availability for ${foodName}: ${response.statusText}`);
+            }
+    
+            const data = await response.json();
+            console.log('Update successful:', data);
+    
+        } catch (error) {
+            console.error("Error updating food availability:", error);
+        }
     };
 
     // Dish Page: Handle master dish avaiability toggle
-    const handleMasterToggle = () => {
-        const newMasterToggle = !masterToggle;
-        setMasterToggle(newMasterToggle);
+    const handleMasterToggle = async () => {
+        // Check if all food items are currently available
+        const areAllAvailable = foodItems.every(item => item.availability === 'available');
+        
+        // Determine the new availability status
+        const availability = areAllAvailable ? 'unavailable' : 'available'; // Toggle logic
     
-        // Set all items to the new master toggle state
-        const newToggledItems = {};
-            foodItems.forEach((_, index) => {
-                newToggledItems[index] = newMasterToggle;
+        // Use the current category
+        const selectedCategory = category; 
+    
+        // Fetch request to update availability for all items in the category
+        const token = localStorage.getItem("token"); // Retrieve the JWT token
+        
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/menus/update-availability`, {
+                method: 'PUT', // Modify if your API requires a different method
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    category: selectedCategory,  // Send the current category
+                    availability: availability    // Set to either 'available' or 'unavailable'
+                }),
             });
-            setToggledItems(newToggledItems);
-        };
+    
+            if (!response.ok) {
+                throw new Error(`Failed to update availability: ${response.statusText}`);
+            }
+    
+            const data = await response.json();
+            console.log('Update successful:', data);
+            fetchFoodByCategory(category);
+            
+            // Here, you can update your local state if needed
+            const newToggledItems = {};
+            foodItems.forEach((_, index) => {
+                newToggledItems[index] = availability === 'available'; // Set every item's toggle based on availability
+            });
+            // setToggledItems(newToggledItems);  // Update the toggle items states
+    
+        } catch (error) {
+            console.error("Error updating food availability:", error);
+        }
+    };
     
     // Mode Page: Auto Rejection Timer, Cleanup timeout on unmount
     useEffect(() => {
@@ -445,7 +527,8 @@ function Home() {
                     <div className="inline-container-master">
                         <h2>All dishes of: {category}</h2>
                         <p>Disable/Enable</p>
-                        <button className={`toggle-button master-toggle ${masterToggle ? 'toggled' : ''}`} onClick={handleMasterToggle}></button>
+                        <button
+    className={`toggle-button master-toggle ${foodItems.every(item => item.availability == 'available') ? 'toggled' : ''}`} onClick={handleMasterToggle}></button>
                     </div>
 
                     <div className="food-category"> {foodItems.length > 0 ? (
@@ -454,7 +537,7 @@ function Home() {
                                     <p id="food-name">{foodItem.food_name}</p>
                                     <div className="inline-container">
                                         <p id="food-price">${foodItem.food_price}</p>
-                                        <button className={`toggle-button ${toggledItems[index] ? 'toggled' : ''}`} onClick={() => handleToggle(index)}></button>
+                                        <button className={`toggle-button ${foodItems[index].availability == "available" ? 'toggled' : ''}`} onClick={() => handleToggle(index)}></button>
                                     </div>
                                 </li>
                                 ))}

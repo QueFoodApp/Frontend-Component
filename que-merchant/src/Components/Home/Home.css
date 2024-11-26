@@ -386,18 +386,7 @@ select {
     border: none; /* Remove any default borders */
 }
 
-.toggle-button::before {
-    content: "";
-    position: absolute;
-    top: 3px; /* Vertical alignment of the knob */
-    left: 3px; /* Initial position of the knob */
-    width: 19px; /* Width of the knob */
-    height: 19px; /* Height of the knob */
-    background-color: white; /* Knob color */
-    border-radius: 50%; /* Fully rounded knob */
-    transition: transform 0.3s ease; /* Smooth transition for movement */
-    border: none; /* Remove borders from the knob */
-}
+
 
 /* Toggled state */
 .toggle-button.toggled {
