@@ -753,7 +753,7 @@ function Home() {
                                 <li className="food-items" key={index}>
                                     <p id="food-name">{foodItem.food_name}</p>
                                     <div className="inline-container">
-                                        <p id="food-price">${foodItem.food_price}</p>
+                                        <p id="food-price">${parseFloat(foodItem.food_price).toFixed(2)}</p>
                                         <button className={`toggle-button ${foodItems[index].availability == "available" ? 'toggled' : ''}`} onClick={() => handleToggle(index)}></button>
                                     </div>
                                 </li>
