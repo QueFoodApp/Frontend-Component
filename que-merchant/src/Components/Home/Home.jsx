@@ -42,6 +42,12 @@ function Home() {
     const [selectedOrder, setSelectedOrder] = useState(null); // State for selected order
     const [status, setStatus] = useState("Pending"); // Initial status
 
+    // display history states variable
+    const [histories, setFetchedHistory] = useState([]); // Fetched history
+    const [history, setHistory] = useState(false); // Display control for history
+    const [visibleHistory, setVisibleHistory] = useState({});
+    const [selectedHistory, setSelectedHistory] = useState(null);
+
     // Order Page: handle pickup or rejection 
     const updateOrderStatus = async (orderNumber, status) => {
         const token = localStorage.getItem("token"); // Retrieve JWT token
@@ -280,6 +286,43 @@ function Home() {
     
         fetchOrders();
     }, [status]);
+
+
+
+
+    useEffect(() => {
+        const fetchHistory = async () => {
+            const token = localStorage.getItem("token");
+            if (token) {
+                try {
+                    const response = await fetch("http://127.0.0.1:8000/api/history", { 
+                        method: "GET",
+                        headers: {
+                            "Authorization": `Bearer ${token}`,
+                        },
+                    });
+    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`Failed to fetch history. Status: ${response.status}, Detail: ${errorData.detail}`);
+                    }
+    
+                    const data = await response.json(); 
+                    setFetchedHistory(data); // Set the fetched history
+                } catch (error) {
+                    console.error("Error fetching history:", error);
+                    navigate("/login");
+                }
+            } else {
+                navigate("/login");
+            }
+        };
+    
+        fetchHistory();
+    }, [status]);
+
+
+
     
 
     // Mode Page: toogle popup visible or not 
@@ -504,6 +547,7 @@ function Home() {
             {/* Display Order List */}
             {order && orders.length > 0 ? (
                 <div className="order-container">
+                    <h1>Active Orders</h1>
                     <ul>
                         {orders.map((orderItem, index) => (
                             <ul className="order-category" key={index}>
@@ -593,7 +637,7 @@ function Home() {
                                                 <option value="Cancel This Order">Cancel This Order</option>
                                             </select>
                                         ) : (
-                                            <p>Order Status: {status}</p>
+                                            <></>
                                         )}
                                     </div>
 
@@ -604,14 +648,104 @@ function Home() {
                 )}
             </div>
 
+
+            {/* Display History List */}
+            {history && histories.length > 0 ? (
+                <div className="order-container">
+                    <h1>Order History</h1>
+                    <ul>
+                        {histories.map((orderItem, index) => (
+                            <ul className="order-category" key={index}>
+                                <button className="order-edit" onClick={(event) => toggleOrderVisibility(event, index, orderItem.order_number, orderItem.status)}>&gt;</button>
+                                <p className="order-title">Order Number: {orderItem.order_number}</p>
+                                <p className="order-status">
+                                    <span className="status-badge" style={getStatusBadgeStyle(orderItem.status)}>Status: {orderItem.status}</span>
+                                </p>
+                                <p>
+                                    <strong>Item Count:</strong> {orderItem.items_count}
+                                    <br/>
+                                    <strong>Total:</strong> ${orderItem.total}
+                                </p>
+                            </ul>
+                        ))}
+                    </ul>
+                </div>
+            ) : (
+                history && <></>
+            )}
+
+            {/* Right Section: Display Selected History Details */}
+            <div className="food-container">
+                {history && histories.length > 0 && (
+                    <div>
+                        {histories.map((orderItem, index) =>
+                            visibleOrders[index] ? (
+                                <div key={index}>
+                                    
+                                    <p className="order-title-inside">Order Number: {orderItem.order_number}</p>
+                                    <br/>
+                                    <h3> Due Date:{' '}{format(new Date(orderItem.due_date), 'hh:mm a')} </h3>
+                                                                    
+                                    <p className="order-status-inside">
+                                        <span className="status-badge-inside" style={getStatusBadgeStyle(orderItem.status)} >Status: {orderItem.status}</span>
+                                    </p>
+                                    <hr className="line-break"></hr>
+
+                                    {orderItem.fooditems && orderItem.fooditems.length > 0 ? (
+                                        <div className="order-details">
+                                            <ul className="food-list">
+                                                {Object.entries(
+                                                    orderItem.fooditems.reduce((acc, item) => {
+                                                        if (!acc[item.food_name]) {
+                                                            acc[item.food_name] = { ...item, quantity: 1 };
+                                                        } else {
+                                                            acc[item.food_name].quantity += 1;
+                                                            acc[item.food_name].food_price = (
+                                                                parseFloat(acc[item.food_name].food_price) +
+                                                                parseFloat(item.food_price)
+                                                            ).toFixed(2); // Sum up prices
+                                                        }
+                                                        return acc;
+                                                    }, {})
+                                                ).map(([foodName, groupedItem], itemIndex) => (
+                                                    <li key={itemIndex} className="food-item">
+                                                        <div className="food-info">
+                                                            <h3 className="food-name">Quantity: {groupedItem.quantity}</h3>
+                                                            <h3 className="food-name">{foodName}</h3>
+                                                            <h3 className="food-price"> ${parseFloat(groupedItem.food_price).toFixed(2)}</h3>
+                                                        </div>
+                                                        <hr className="line-break" />
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    ) : (
+                                        <p>No food items found for this order.</p>
+                                    )}
+
+                                    <hr className="line-break"></hr>
+
+                                    <div className="subtotal">
+                                        <p><strong>Subtotal: ${parseFloat(orderItem.subtotal).toFixed(2)}</strong></p>
+                                        <p><strong>Tax: ${parseFloat(orderItem.taxes).toFixed(2)}</strong></p>
+                                        <h3><strong>Total:</strong> ${parseFloat(orderItem.total).toFixed(2)}</h3>
+                                    </div>
+
+                                </div>
+                            ) : null
+                        )}
+                    </div>
+                )}
+            </div>
+
+
             <div className="food-container"> {isOrderClicked && (
                 <div>
 
                     <div className="inline-container-master">
                         <h2>All dishes of: {category}</h2>
                         <p>Disable/Enable</p>
-                        <button
-    className={`toggle-button master-toggle ${foodItems.every(item => item.availability == 'available') ? 'toggled' : ''}`} onClick={handleMasterToggle}></button>
+                        <button className={`toggle-button master-toggle ${foodItems.every(item => item.availability == 'available') ? 'toggled' : ''}`} onClick={handleMasterToggle}></button>
                     </div>
 
                     <div className="food-category"> {foodItems.length > 0 ? (
@@ -626,7 +760,7 @@ function Home() {
                                 ))}
                             </ul>
                             ) : (
-                                <p>No food items available for this category.</p >
+                                <p>Select a category to edit.</p >
                             )}
                     </div>
                 </div>
@@ -641,16 +775,23 @@ function Home() {
                         if (value.title === "Dish") {
                             setOrders(false); // Ensure the "Order" view is hidden
                             setIsOrderClicked(true); // Show the "Dish" view
+                            setHistory(false);
                         } 
                         else if (value.title === "Order") {
                             setOrders(true); // Show the "Order" view
                             setIsOrderClicked(false); // Ensure the "Dish" view is hidden
+                            setHistory(false);
                         }
                         else if (value.title === "Mode") {
                             handleModeClick();
                         } 
                         else if (value.title === "Logout") {
                             handleLogout();
+                        } 
+                        else if (value.title === "History") {
+                            setOrders(false);
+                            setIsOrderClicked(false);
+                            setHistory(true);
                         } 
                         else {
                             window.location.pathname = value.link;
