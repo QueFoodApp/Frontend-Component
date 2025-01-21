@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import "./Home.css";
 import { SideBar } from './SideBar';
 import { useNavigate } from "react-router-dom";
 import { format } from 'date-fns';
+import Cropper from 'react-easy-crop';
+import getCroppedImg from './cropImage'; // Utility function to get the cropped image
 
 function Home() {
     const navigate = useNavigate();
@@ -19,6 +21,9 @@ function Home() {
     const [isOrderClicked, setIsOrderClicked] = useState(false);        // State for "Order" click
     const [menus, setMenus] = useState([]);                             // State for menus
     const [searchQuery, setSearchQuery] = useState("");                 // New state for search input
+
+    // disply upload photo states variable 
+    const [isUploadClicked, setIsUploadClicked] = useState(false); 
 
     // display food and price states variable 
     const [category, setCategory] = useState('');                       // State to store selected category
@@ -47,6 +52,38 @@ function Home() {
     const [history, setHistory] = useState(false); // Display control for history
     const [visibleHistory, setVisibleHistory] = useState({});
     const [selectedHistory, setSelectedHistory] = useState(null);
+
+    const [imageSrc, setImageSrc] = useState(null);
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+
+    const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+        setCroppedAreaPixels(croppedAreaPixels);
+    }, []);
+
+    const handleImageUpload = (event) => {
+        const file = event.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            setImageSrc(reader.result);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          alert('Please select an image file');
+        }
+    };
+
+    const handleCrop = async () => {
+        try {
+          const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels);
+          // Handle the cropped image as needed, e.g., upload to server or display in UI
+        } catch (error) {
+          console.error('Error cropping image:', error);
+        }
+    };
+
 
     // Order Page: handle pickup or rejection 
     const updateOrderStatus = async (orderNumber, status) => {
@@ -544,6 +581,37 @@ function Home() {
                 </div>
             )}
 
+              {/* Display upload function only if the "Upload" button is clicked */}
+              {isUploadClicked && (
+                <div>
+                    <div className="menu-container">
+                    <h1>Upload Dish Image</h1>
+                    <input
+                        type="text"
+                        className="search-bar"
+                        placeholder="Search for a category..."
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                    />
+                    <div className="menu-category">
+                        <div className="menu-category-title">Restaurant Name Placeholder</div>
+                        <button className="edit-menu">&gt;</button>
+                    </div>
+                        {foodItems.length > 0 ? (
+                            foodItems.map((foodItem,index) => (
+                                <div key={index} className="menu-category">
+                                    <div className="menu-category-title">{foodItem.food_name}</div>
+                                    <button className="edit-menu">&gt;</button>
+                                </div>
+                            ))
+                        ) : (
+                            <p>No menus available.</p>
+                        )}
+                    </div>
+
+                </div>
+            )} 
+
             {/* Display Order List */}
             {order && orders.length > 0 ? (
                 <div className="order-container">
@@ -776,11 +844,13 @@ function Home() {
                             setOrders(false); // Ensure the "Order" view is hidden
                             setIsOrderClicked(true); // Show the "Dish" view
                             setHistory(false);
+                            setIsUploadClicked(false);
                         } 
                         else if (value.title === "Order") {
                             setOrders(true); // Show the "Order" view
                             setIsOrderClicked(false); // Ensure the "Dish" view is hidden
                             setHistory(false);
+                            setIsUploadClicked(false);
                         }
                         else if (value.title === "Mode") {
                             handleModeClick();
@@ -792,7 +862,14 @@ function Home() {
                             setOrders(false);
                             setIsOrderClicked(false);
                             setHistory(true);
+                            setIsUploadClicked(false);
                         } 
+                        else if (value.title === "Upload"){
+                            setOrders(false);
+                            setHistory(false);
+                            setIsOrderClicked(false);
+                            setIsUploadClicked(true);
+                        }
                         else {
                             window.location.pathname = value.link;
                         }
