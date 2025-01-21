@@ -1,61 +1,42 @@
-import Cropper from 'cropperjs';
-
-const getCroppedImg = (imageSrc, crop) => {
+const getCroppedImg = (imageSrc, croppedAreaPixels) => {
   return new Promise((resolve, reject) => {
-    // Create a new image element
-    const image = document.createElement('img');
+    const image = new Image();
     image.src = imageSrc;
 
     image.onload = () => {
-      try {
-        // Append the image to a temporary container to ensure it's part of the DOM
-        const container = document.createElement('div');
-        container.style.display = 'none'; // Hide container
-        document.body.appendChild(container);
-        container.appendChild(image);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
 
-        // Initialize Cropper
-        const cropper = new Cropper(image, {
-          viewMode: 1,
-          autoCropArea: 1,
-          background: false,
-          zoomable: false,
-          scalable: false,
-          cropBoxMovable: false,
-          cropBoxResizable: false,
-          data: {
-            x: crop.x,
-            y: crop.y,
-            width: crop.width,
-            height: crop.height,
-          },
-        });
+      // Set canvas dimensions
+      canvas.width = croppedAreaPixels.width;
+      canvas.height = croppedAreaPixels.height;
 
-        // Get cropped canvas and convert to Blob
-        const canvas = cropper.getCroppedCanvas();
-        if (!canvas) {
-          throw new Error('Failed to create canvas');
-        }
+      // Draw the cropped area of the image onto the canvas
+      ctx.drawImage(
+        image,
+        croppedAreaPixels.x,
+        croppedAreaPixels.y,
+        croppedAreaPixels.width,
+        croppedAreaPixels.height,
+        0,
+        0,
+        croppedAreaPixels.width,
+        croppedAreaPixels.height
+      );
 
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              const fileUrl = URL.createObjectURL(blob);
-              resolve(fileUrl);
-            } else {
-              reject(new Error('Canvas is empty'));
-            }
-
-            // Cleanup
-            cropper.destroy();
-            document.body.removeChild(container);
-          },
-          'image/jpeg',
-          0.8 // Adjust image quality if needed
-        );
-      } catch (error) {
-        reject(error);
-      }
+      // Convert canvas to blob or base64
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const fileUrl = URL.createObjectURL(blob);
+            resolve(fileUrl);
+          } else {
+            reject(new Error('Canvas is empty'));
+          }
+        },
+        'image/jpeg',
+        0.9 // Image quality
+      );
     };
 
     image.onerror = () => {

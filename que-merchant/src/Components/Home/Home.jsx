@@ -59,9 +59,11 @@ function Home() {
     const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
     const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
-        setCroppedAreaPixels(croppedAreaPixels);
-    }, []);
-
+        console.log('Cropped Area:', croppedArea);
+        console.log('Cropped Area Pixels:', croppedAreaPixels);
+        setCroppedAreaPixels(croppedAreaPixels); // Save the cropped area pixels
+      }, []);
+      
     const handleImageUpload = (event) => {
         const file = event.target.files[0];
         if (file && file.type.startsWith('image/')) {
@@ -77,14 +79,25 @@ function Home() {
 
     const handleCrop = async () => {
         try {
+          // Ensure croppedAreaPixels is available
+          if (!croppedAreaPixels) {
+            alert('Please select a crop area first!');
+            return;
+          }
+      
           const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels);
-          // Handle the cropped image as needed, e.g., upload to server or display in UI
+      
+          // Log or display the cropped image URL (for testing)
+          console.log('Cropped Image URL:', croppedImage);
+      
+          // You can now display the cropped image or upload it to a server
+          // For example, display the cropped image:
+          setImageSrc(croppedImage); // Replace the original image with the cropped one
         } catch (error) {
-          console.error('Error cropping image:', error);
+          console.error('Error cropping the image:', error);
         }
-    };
-
-
+      };
+    
     // Order Page: handle pickup or rejection 
     const updateOrderStatus = async (orderNumber, status) => {
         const token = localStorage.getItem("token"); // Retrieve JWT token
@@ -594,10 +607,10 @@ function Home() {
                         onChange={handleSearchChange}
                     />
                     <div className="menu-category">
-                        <div className="menu-category-title">Restaurant Name Placeholder</div>
-                        <button className="edit-menu">&gt;</button>
+                        {/* <div className="menu-category-title">Restaurant Name Placeholder</div>
+                        <button className="edit-menu">&gt;</button> */}
                     </div>
-                        {foodItems.length > 0 ? (
+                        {/* {foodItems.length > 0 ? (
                             foodItems.map((foodItem,index) => (
                                 <div key={index} className="menu-category">
                                     <div className="menu-category-title">{foodItem.food_name}</div>
@@ -606,6 +619,25 @@ function Home() {
                             ))
                         ) : (
                             <p>No menus available.</p>
+                        )} */}
+                    </div>
+                    <div className="upload-container">
+                        <input type="file" accept="image/*" onChange={handleImageUpload} />
+                        {imageSrc && (
+                            <>
+                            <div className="cropper-container">
+                                <Cropper
+                                image={imageSrc}
+                                crop={crop}
+                                zoom={zoom}
+                                aspect={4 / 3}
+                                onCropChange={setCrop}
+                                onZoomChange={setZoom}
+                                onCropComplete={onCropComplete}
+                                />
+                            </div>
+                            <button onClick={handleCrop}>Crop Image</button>
+                            </>
                         )}
                     </div>
 
