@@ -40,6 +40,19 @@ function Home() {
     const [toggledItems, setToggledItems] = useState({});
     const [masterToggle, setMasterToggle] = useState({});
 
+    // Food from the restaurant
+    const [foodNames, setFoodNames] = useState([]);
+
+    // restaurantDetails
+    const [restaurantDetails, setRestaurantDetails] = useState(null);
+
+    // Global state to store photo details
+    const [photoDetails, setPhotoDetails] = useState(null);
+
+    const [selectedFood, setSelectedFood] = useState(null);
+    // refresh the image source
+    const fileInputRef = useRef(null); 
+
     // display order states variable
     const [orders, setFetchedOrders] = useState([]); // Fetched orders
     const [order, setOrders] = useState(false); // Display control for orders
@@ -75,6 +88,62 @@ function Home() {
         } else {
           alert('Please select an image file');
         }
+    };
+
+    //  Place `uploadImageToServer` here!
+    const uploadImageToServer = async () => {
+        if (!selectedFood) {
+            alert("Please select a dish before uploading.");
+            return;
+        }
+    
+        if (!imageSrc) {
+            alert("Please upload and crop an image first.");
+            return;
+        }
+    
+        const token = localStorage.getItem("token");
+        const formData = new FormData();
+    
+        // Convert imageSrc (base64) to a file
+        const blob = await fetch(imageSrc).then((res) => res.blob());
+        const file = new File([blob], `${selectedFood}.jpg`, { type: "image/jpeg" });
+    
+        formData.append("file", file);
+        formData.append("restaurant_id", restaurantDetails?.restaurant_id);  
+        formData.append("food_name", selectedFood);  
+        formData.append("description", "Dish photo");
+    
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/restaurant/upload-photo", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: formData,
+            });
+    
+            if (!response.ok) {
+                throw new Error("Failed to upload image");
+            }
+    
+            const data = await response.json();
+            console.log("Image uploaded successfully:", data);
+            alert("Image uploaded successfully!");
+    
+        // Reset input & image preview after successful upload
+        setImageSrc(null);  // Clears the preview
+        setCroppedAreaPixels(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";  // Clears file input
+        }
+
+        // Refresh the image to show the new one
+        handlePhotoFetch(selectedFood);
+    } catch (error) {
+        console.error("Error uploading image:", error);
+        alert("Failed to upload image");
+    }
     };
 
     const handleCrop = async () => {
@@ -409,7 +478,6 @@ function Home() {
             }
 
             const data = await response.json();
-            console.log('Fetched food items:', data);
             setFoodItems(data); // Set the fetched food items in state
         } catch (error) {
             console.error('Error fetching food items:', error);
@@ -419,6 +487,44 @@ function Home() {
     const handleCategoryClick = (menu) => {
         setCategory(menu.category); // Set selected category
         fetchFoodByCategory(menu.category); // Fetch food items based on category
+    };
+
+
+    // Dish Page: API Fetch Photo by Food Name
+    const fetchPhotoByFoodName = async (foodName) => {
+        const token = localStorage.getItem("token"); // Your JWT token
+        const url = `http://127.0.0.1:8000/api/restaurant/photo?food_name=${encodeURIComponent(foodName)}`; // Construct the URL
+
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`, // Include the token in the headers
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch photo');
+            }
+
+            const data = await response.json();
+            console.log('Fetched photo:', data);
+
+            // Update the photoDetails state
+            setPhotoDetails(data); // Store the fetched photo details in state
+        } catch (error) {
+            console.error('Error fetching photo:', error);
+        }
+    };
+
+    // Example: Using this function in a handler
+    const handlePhotoFetch = async (foodName) => {
+        // Clear previous photo before fetching new one
+        setSelectedFood(foodName);
+        setPhotoDetails(null);
+        setImageSrc(null);
+        await fetchPhotoByFoodName(foodName);
     };
 
     // Busy mode & Auto Rejection Timer: toggle different popup windows 
@@ -553,6 +659,73 @@ function Home() {
         }
     };
 
+
+// fetch restaurant
+    const fetchRestaurantDetails = async () => {
+        const token = localStorage.getItem("token"); // Get the JWT token
+
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/restaurant", {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`, // Attach the token for authentication
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(
+                    `Failed to fetch restaurant details: ${errorData.detail}`
+                );
+            }
+
+            const data = await response.json(); // Parse JSON response
+            setRestaurantDetails(data); // Update state with restaurant details
+        } catch (err) {
+            console.error("Error fetching restaurant details:", err.message);
+            setRestaurantDetails({ error: err.message }); // Store error directly in `restaurantDetails`
+        }
+    };
+
+    // Fetch restaurant details when the component mounts
+    useEffect(() => {
+        fetchRestaurantDetails();
+    }, []);
+
+
+    // Fetch food names from the backend
+    const fetchFoodNames = async () => {
+        const token = localStorage.getItem("token"); // Get the JWT token
+
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/foodnames", {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`, // Attach the token for authentication
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(
+                    `Failed to fetch food names: ${errorData.detail}`
+                );
+            }
+
+            const data = await response.json();
+            setFoodNames(data.food_names);
+        } catch (err) {
+            console.error("Error fetching food names:", err.message);
+        }
+    };
+
+    // Fetch food names when the component mounts
+    useEffect(() => {
+        fetchFoodNames();
+    }, []);
+
     // Main: Display HTML page 
     return (
 
@@ -565,7 +738,7 @@ function Home() {
                 <h2>FOODHALL</h2>
             </div>
 
-            {/* Display menus only if the "Order" item is clicked */}
+            {/* Display dishes only if the "Order" item is clicked */}
             {isOrderClicked && (
                 <div className="menu-container">
                     <h1>Category</h1>
@@ -607,39 +780,55 @@ function Home() {
                         onChange={handleSearchChange}
                     />
                     <div className="menu-category">
-                        {/* <div className="menu-category-title">Restaurant Name Placeholder</div>
-                        <button className="edit-menu">&gt;</button> */}
+                        <div className="menu-category-title">{restaurantDetails.restaurant_name}</div>
+                        <button className="edit-menu">&gt;</button>
                     </div>
-                        {/* {foodItems.length > 0 ? (
-                            foodItems.map((foodItem,index) => (
-                                <div key={index} className="menu-category">
-                                    <div className="menu-category-title">{foodItem.food_name}</div>
-                                    <button className="edit-menu">&gt;</button>
-                                </div>
-                            ))
-                        ) : (
-                            <p>No menus available.</p>
-                        )} */}
+                    {foodNames.length > 0 ? (foodNames.map((food, index) => (
+                    <div key={index} className="menu-category">
+                    <div className="menu-category-title">{food}</div>
+            <button className="edit-menu" onClick={() => handlePhotoFetch(food)}>
+                &gt;
+            </button>
+        </div>
+    ))
+) : (
+    <p>No food names available.</p>
+)}
                     </div>
                     <div className="upload-container">
-                        <input type="file" accept="image/*" onChange={handleImageUpload} />
+                        <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} />
                         {imageSrc && (
                             <>
                             <div className="cropper-container">
                                 <Cropper
                                 image={imageSrc}
-                                crop={crop}
-                                zoom={zoom}
+                                crop={{ x: 0, y: 0 }}
+                                zoom={1}
                                 aspect={4 / 3}
-                                onCropChange={setCrop}
-                                onZoomChange={setZoom}
+                                onCropChange={() => {}}
+                                onZoomChange={() => {}}
                                 onCropComplete={onCropComplete}
                                 />
                             </div>
                             <button onClick={handleCrop}>Crop Image</button>
                             </>
                         )}
+                        {selectedFood && (
+                            <div>
+                                <h3>Selected Dish: {selectedFood}</h3>
+                                <button onClick={() => uploadImageToServer(imageSrc)}>Submit Image</button>
+                            </div>
+                        )}
+
                     </div>
+
+                    <div>
+                            {photoDetails?.photo_data ? (
+                                <img src={`data:image/jpeg;base64,${photoDetails.photo_data}`} alt="Dish Photo" />
+                            ) : (
+                                <p>No photo available.</p>
+                            )}
+                        </div>
 
                 </div>
             )} 

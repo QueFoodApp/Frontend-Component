@@ -5,7 +5,6 @@ import Home from "./Components/Home/Home";
 
 function App() {
     const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true"; // Check for login status
-    console.log(isLoggedIn);
 
     return (
         <Router>
