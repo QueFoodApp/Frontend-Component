@@ -731,6 +731,7 @@ function Home() {
 
         <div className="main-container">
 
+            {/* Backgroud Logo Text - The Que App */}
             <div className="background-text">
                 <h1>WELCOME</h1>
                 <h2>TO</h2>
@@ -742,23 +743,12 @@ function Home() {
             {isOrderClicked && (
                 <div className="menu-container">
                     <h1>Category</h1>
-                    <input
-                        type="text"
-                        className="search-bar"
-                        placeholder="Search for a category..."
-                        value={searchQuery}
-                        onChange={handleSearchChange}
-                    />
+                    <input type="text" className="search-bar" placeholder="Search for a category..." value={searchQuery} onChange={handleSearchChange}/>
                     {filteredMenus.length > 0 ? (
                         filteredMenus.map((menu, index) => (
                             <div key={index} className="menu-category">
                                 <div className="menu-category-title">{menu.category}</div>
-                                <button
-                                    className="edit-menu"
-                                    onClick={() => handleCategoryClick(menu)}
-                                >
-                                    &gt;
-                                </button>
+                                <button className="edit-menu" onClick={() => handleCategoryClick(menu)}> &gt; </button>
                             </div>
                         ))
                     ) : (
@@ -767,69 +757,57 @@ function Home() {
                 </div>
             )}
 
-              {/* Display upload function only if the "Upload" button is clicked */}
-              {isUploadClicked && (
+            {/* Display upload function only if the "Upload" button is clicked */}
+            {isUploadClicked && (
                 <div>
                     <div className="menu-container">
-                    <h1>Upload Dish Image</h1>
-                    <input
-                        type="text"
-                        className="search-bar"
-                        placeholder="Search for a category..."
-                        value={searchQuery}
-                        onChange={handleSearchChange}
-                    />
-                    <div className="menu-category">
-                        <div className="menu-category-title">{restaurantDetails.restaurant_name}</div>
-                        <button className="edit-menu">&gt;</button>
+                        <h1>Upload Dish Image</h1>
+                        <input type="text" className="search-bar" placeholder="Search for a category..." value={searchQuery} onChange={handleSearchChange}/>
+                        {restaurantDetails ? (
+                            <div className="menu-category">
+                                <div className="menu-category-title">{restaurantDetails.restaurant_name}</div>
+                                <button className="edit-menu">&gt;</button>
+                            </div>
+                        ) : (
+                            <p>Loading restaurant details...</p>
+                        )}
+
+                        {foodNames.length > 0 ? (foodNames.map((food, index) => (
+                            <div key={index} className="menu-category">
+                                <div className="menu-category-title">{food}</div>
+                                <button className="edit-menu" onClick={() => handlePhotoFetch(food)}> &gt; </button>
+                            </div>
+                        ))
+                        ) : (
+                            <p>No food names available.</p>
+                        )}
                     </div>
-                    {foodNames.length > 0 ? (foodNames.map((food, index) => (
-                    <div key={index} className="menu-category">
-                    <div className="menu-category-title">{food}</div>
-            <button className="edit-menu" onClick={() => handlePhotoFetch(food)}>
-                &gt;
-            </button>
-        </div>
-    ))
-) : (
-    <p>No food names available.</p>
-)}
-                    </div>
+
                     <div className="upload-container">
                         <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} />
-                        {imageSrc && (
-                            <>
-                            <div className="cropper-container">
-                                <Cropper
-                                image={imageSrc}
-                                crop={{ x: 0, y: 0 }}
-                                zoom={1}
-                                aspect={4 / 3}
-                                onCropChange={() => {}}
-                                onZoomChange={() => {}}
-                                onCropComplete={onCropComplete}
-                                />
+                        {imageSrc && ( <>
+                            <div className="cropper-container"> 
+                                <Cropper image={imageSrc} crop={{ x: 0, y: 0 }} zoom={1} aspect={4 / 3} onCropChange={() => {}} onZoomChange={() => {}} onCropComplete={onCropComplete}/>
                             </div>
-                            <button onClick={handleCrop}>Crop Image</button>
+                            <button className="dish-button" onClick={handleCrop}>Crop Image</button>
                             </>
                         )}
                         {selectedFood && (
                             <div>
                                 <h3>Selected Dish: {selectedFood}</h3>
-                                <button onClick={() => uploadImageToServer(imageSrc)}>Submit Image</button>
+                                <button className="dish-button" onClick={() => uploadImageToServer(imageSrc)}>Submit Image</button>
                             </div>
                         )}
-
                     </div>
 
-                    <div>
-                            {photoDetails?.photo_data ? (
-                                <img src={`data:image/jpeg;base64,${photoDetails.photo_data}`} alt="Dish Photo" />
-                            ) : (
-                                <p>No photo available.</p>
-                            )}
-                        </div>
-
+                    <div className="photo-storage">
+                        <h3>Current Image</h3>
+                        {photoDetails?.photo_data ? (
+                            <img src={`data:image/jpeg;base64,${photoDetails.photo_data}`} alt="Dish Photo" />
+                        ) : (
+                            <p>No photo available.</p>
+                        )}
+                    </div>
                 </div>
             )} 
 
