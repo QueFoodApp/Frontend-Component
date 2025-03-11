@@ -862,9 +862,9 @@ function Home() {
                                                             acc[item.food_name] = { ...item, quantity: 1 };
                                                         } else {
                                                             acc[item.food_name].quantity += 1;
-                                                            acc[item.food_name].food_price = (
-                                                                parseFloat(acc[item.food_name].food_price) +
-                                                                parseFloat(item.food_price)
+                                                            acc[item.food_name].unit_price = (
+                                                                parseFloat(acc[item.food_name].unit_price) +
+                                                                parseFloat(item.unit_price)
                                                             ).toFixed(2); // Sum up prices
                                                         }
                                                         return acc;
@@ -874,7 +874,7 @@ function Home() {
                                                         <div className="food-info">
                                                             <h3 className="food-name">Quantity: {groupedItem.quantity}</h3>
                                                             <h3 className="food-name">{foodName}</h3>
-                                                            <h3 className="food-price"> ${parseFloat(groupedItem.food_price).toFixed(2)}</h3>
+                                                            <h3 className="food-price"> ${parseFloat(groupedItem.unit_price).toFixed(2)}</h3>
                                                         </div>
                                                         <hr className="line-break" />
                                                     </li>
@@ -967,9 +967,9 @@ function Home() {
                                                             acc[item.food_name] = { ...item, quantity: 1 };
                                                         } else {
                                                             acc[item.food_name].quantity += 1;
-                                                            acc[item.food_name].food_price = (
-                                                                parseFloat(acc[item.food_name].food_price) +
-                                                                parseFloat(item.food_price)
+                                                            acc[item.food_name].unit_price = (
+                                                                parseFloat(acc[item.food_name].unit_price) +
+                                                                parseFloat(item.unit_price)
                                                             ).toFixed(2); // Sum up prices
                                                         }
                                                         return acc;
@@ -979,7 +979,7 @@ function Home() {
                                                         <div className="food-info">
                                                             <h3 className="food-name">Quantity: {groupedItem.quantity}</h3>
                                                             <h3 className="food-name">{foodName}</h3>
-                                                            <h3 className="food-price"> ${parseFloat(groupedItem.food_price).toFixed(2)}</h3>
+                                                            <h3 className="food-price"> ${parseFloat(groupedItem.unit_price).toFixed(2)}</h3>
                                                         </div>
                                                         <hr className="line-break" />
                                                     </li>
