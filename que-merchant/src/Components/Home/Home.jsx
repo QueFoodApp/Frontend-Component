@@ -4,7 +4,7 @@ import { SideBar } from './SideBar';
 import { useNavigate } from "react-router-dom";
 import { format } from 'date-fns';
 import Cropper from 'react-easy-crop';
-import getCroppedImg from './cropImage'; // Utility function to get the cropped image
+import getCroppedImg from './cropImage';
 
 function Home() {
     const navigate = useNavigate();
@@ -18,21 +18,21 @@ function Home() {
     const [currentOptions, setCurrentOptions] = useState(["Busy Mode", "Auto Reject Timer"]);
 
     // display menu states variable 
-    const [isOrderClicked, setIsOrderClicked] = useState(false);        // State for "Order" click
-    const [menus, setMenus] = useState([]);                             // State for menus
-    const [searchQuery, setSearchQuery] = useState("");                 // New state for search input
+    const [isOrderClicked, setIsOrderClicked] = useState(false);       
+    const [menus, setMenus] = useState([]);                          
+    const [searchQuery, setSearchQuery] = useState("");                
 
     // disply upload photo states variable 
     const [isUploadClicked, setIsUploadClicked] = useState(false); 
 
     // display food and price states variable 
-    const [category, setCategory] = useState('');                       // State to store selected category
+    const [category, setCategory] = useState('');                     
 
     // auto reject timer states variable 
-    const [hours, setHours] = useState('');                             // New state for hours input
-    const [minutes, setMinutes] = useState('');                         // New state for minutes input
-    const [amPm, setAmPm] = useState('AM');                             // New state for AM/PM selection
-    const [autoRejectTime, setAutoRejectTime] = useState(null);         // New state for auto reject time
+    const [hours, setHours] = useState('');                            
+    const [minutes, setMinutes] = useState('');                         
+    const [amPm, setAmPm] = useState('AM');                           
+    const [autoRejectTime, setAutoRejectTime] = useState(null);       
     const timerRef = useRef(null);
 
     // food item states variable 
@@ -54,15 +54,15 @@ function Home() {
     const fileInputRef = useRef(null); 
 
     // display order states variable
-    const [orders, setFetchedOrders] = useState([]); // Fetched orders
-    const [order, setOrders] = useState(false); // Display control for orders
+    const [orders, setFetchedOrders] = useState([]);
+    const [order, setOrders] = useState(false);
     const [visibleOrders, setVisibleOrders] = useState({});
-    const [selectedOrder, setSelectedOrder] = useState(null); // State for selected order
-    const [status, setStatus] = useState("Pending"); // Initial status
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [status, setStatus] = useState("Pending"); 
 
     // display history states variable
-    const [histories, setFetchedHistory] = useState([]); // Fetched history
-    const [history, setHistory] = useState(false); // Display control for history
+    const [histories, setFetchedHistory] = useState([]); 
+    const [history, setHistory] = useState(false); 
     const [visibleHistory, setVisibleHistory] = useState({});
     const [selectedHistory, setSelectedHistory] = useState(null);
 
@@ -135,7 +135,7 @@ function Home() {
         setImageSrc(null);  // Clears the preview
         setCroppedAreaPixels(null);
         if (fileInputRef.current) {
-            fileInputRef.current.value = "";  // Clears file input
+            fileInputRef.current.value = ""; 
         }
 
         // Refresh the image to show the new one
@@ -159,7 +159,7 @@ function Home() {
           // Log or display the cropped image URL (for testing)
           console.log('Cropped Image URL:', croppedImage);
       
-          // You can now display the cropped image or upload it to a server
+        
           // For example, display the cropped image:
           setImageSrc(croppedImage); // Replace the original image with the cropped one
         } catch (error) {
@@ -265,7 +265,7 @@ function Home() {
     
         try {
             const response = await fetch(`http://127.0.0.1:8000/api/menus/availability`, {
-                method: 'PUT', // Or 'PATCH' based on your API design
+                method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -305,7 +305,7 @@ function Home() {
         
         try {
             const response = await fetch(`http://127.0.0.1:8000/api/menus/update-availability`, {
-                method: 'PUT', // Modify if your API requires a different method
+                method: 'PUT', 
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -324,7 +324,7 @@ function Home() {
             console.log('Update successful:', data);
             fetchFoodByCategory(category);
             
-            // Here, you can update your local state if needed
+           
             const newToggledItems = {};
             foodItems.forEach((_, index) => {
                 newToggledItems[index] = availability === 'available'; // Set every item's toggle based on availability
@@ -461,8 +461,8 @@ function Home() {
 
     // Dish Page: API Display Food Items 
     const fetchFoodByCategory = async (selectedCategory) => {
-        const token = localStorage.getItem("token"); // Your JWT token
-        const url = `http://127.0.0.1:8000/api/menus/food?category=${encodeURIComponent(selectedCategory)}`; // Construct the URL
+        const token = localStorage.getItem("token"); 
+        const url = `http://127.0.0.1:8000/api/menus/food?category=${encodeURIComponent(selectedCategory)}`;
 
         try {
             const response = await fetch(url, {
@@ -492,14 +492,14 @@ function Home() {
 
     // Dish Page: API Fetch Photo by Food Name
     const fetchPhotoByFoodName = async (foodName) => {
-        const token = localStorage.getItem("token"); // Your JWT token
+        const token = localStorage.getItem("token"); 
         const url = `http://127.0.0.1:8000/api/restaurant/photo?food_name=${encodeURIComponent(foodName)}`; // Construct the URL
 
         try {
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`, // Include the token in the headers
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
             });
@@ -512,7 +512,7 @@ function Home() {
             console.log('Fetched photo:', data);
 
             // Update the photoDetails state
-            setPhotoDetails(data); // Store the fetched photo details in state
+            setPhotoDetails(data);
         } catch (error) {
             console.error('Error fetching photo:', error);
         }
@@ -897,7 +897,7 @@ function Home() {
                                         {status === "Pending" ? (
                                             <select
                                                 className="custom-dropdown"
-                                                onChange={(event) => handleChange(event, orderItem.order_number)} // Pass order number
+                                                onChange={(event) => handleChange(event, orderItem.order_number)}
                                             >
                                                 <option value="Update the order status">Update the Order Status</option>
                                                 <option value="Ready to Pick Up">Ready to Pick Up</option>
